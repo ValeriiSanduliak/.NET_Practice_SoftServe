@@ -9,7 +9,7 @@ public partial class Actor
 
     public string ActorFullName { get; set; } = null!;
 
-    public byte[] ActorPhoto { get; set; } = null!;
+    public byte[]? ActorPhoto { get; set; }
 
     public DateOnly? ActorBirthday { get; set; }
 
