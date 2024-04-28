@@ -36,8 +36,8 @@ public partial class CinemaDbContext : DbContext
 
     public virtual DbSet<Screenwriter> Screenwriters { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseSqlServer("Name=ConnectionStrings:DBConnect");
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+    //    optionsBuilder.UseSqlServer("Name=ConnectionStrings:DBConnect");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,7 +45,7 @@ public partial class CinemaDbContext : DbContext
         {
             entity.HasKey(e => e.ActorId).HasName("PK__Actors__57B3EA2B8BDC9A09");
 
-            entity.Property(e => e.ActorId).ValueGeneratedNever().HasColumnName("ActorID");
+            entity.Property(e => e.ActorId).ValueGeneratedOnAdd().HasColumnName("ActorID");
             entity.Property(e => e.ActorCountry).HasMaxLength(500).IsUnicode(false);
             entity.Property(e => e.ActorFullName).HasMaxLength(500).IsUnicode(false);
         });
