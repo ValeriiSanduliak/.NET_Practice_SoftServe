@@ -30,14 +30,15 @@ public partial class CinemaDbContext : DbContext
 
     public virtual DbSet<MovieGenre> MovieGenres { get; set; }
 
+    public virtual DbSet<MoviePrice> MoviePrices { get; set; }
+
     public virtual DbSet<MovieScreenwriter> MovieScreenwriters { get; set; }
 
     public virtual DbSet<Price> Prices { get; set; }
 
     public virtual DbSet<Screenwriter> Screenwriters { get; set; }
 
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-    //    optionsBuilder.UseSqlServer("Name=ConnectionStrings:DBConnect");
+    public virtual DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,7 +46,7 @@ public partial class CinemaDbContext : DbContext
         {
             entity.HasKey(e => e.ActorId).HasName("PK__Actors__57B3EA2B8BDC9A09");
 
-            entity.Property(e => e.ActorId).ValueGeneratedOnAdd().HasColumnName("ActorID");
+            entity.Property(e => e.ActorId).HasColumnName("ActorID");
             entity.Property(e => e.ActorCountry).HasMaxLength(500).IsUnicode(false);
             entity.Property(e => e.ActorFullName).HasMaxLength(500).IsUnicode(false);
         });
@@ -170,6 +171,28 @@ public partial class CinemaDbContext : DbContext
                 .HasConstraintName("FK__Movie_Gen__Movie__4BAC3F29");
         });
 
+        modelBuilder.Entity<MoviePrice>(entity =>
+        {
+            entity.HasNoKey().ToTable("Movie_Price");
+
+            entity.Property(e => e.MovieId).HasColumnName("MovieID");
+            entity.Property(e => e.PriceId).HasColumnName("PriceID");
+
+            entity
+                .HasOne(d => d.Movie)
+                .WithMany()
+                .HasForeignKey(d => d.MovieId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Movie_Pri__Movie__0A9D95DB");
+
+            entity
+                .HasOne(d => d.Price)
+                .WithMany()
+                .HasForeignKey(d => d.PriceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Movie_Pri__Price__0B91BA14");
+        });
+
         modelBuilder.Entity<MovieScreenwriter>(entity =>
         {
             entity.HasNoKey().ToTable("Movie_Screenwriter");
@@ -194,27 +217,18 @@ public partial class CinemaDbContext : DbContext
 
         modelBuilder.Entity<Price>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.PriceId).HasName("PK__Prices__4957584F3CDC8816");
 
-            entity.Property(e => e.Benefits).HasMaxLength(50).IsUnicode(false);
-            entity.Property(e => e.DayOfTheWeek).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.PriceId).ValueGeneratedNever().HasColumnName("PriceID");
             entity.Property(e => e.HallId).HasColumnName("HallID");
-            entity.Property(e => e.MovieId).HasColumnName("MovieID");
             entity.Property(e => e.Price1).HasColumnName("Price");
 
             entity
                 .HasOne(d => d.Hall)
-                .WithMany()
+                .WithMany(p => p.Prices)
                 .HasForeignKey(d => d.HallId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Prices__HallID__4F7CD00D");
-
-            entity
-                .HasOne(d => d.Movie)
-                .WithMany()
-                .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Prices__MovieID__5070F446");
+                .HasConstraintName("FK__Prices__HallID__08B54D69");
         });
 
         modelBuilder.Entity<Screenwriter>(entity =>
@@ -226,6 +240,23 @@ public partial class CinemaDbContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("ScreenwriterID");
             entity.Property(e => e.ScreenwriterFullName).HasMaxLength(500).IsUnicode(false);
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Users__3213E83FB06D3CC0");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Email).HasMaxLength(255).IsUnicode(false).HasColumnName("email");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
+            entity.Property(e => e.Name).HasMaxLength(255).IsUnicode(false).HasColumnName("name");
+            entity
+                .Property(e => e.Password)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("password");
+            entity.Property(e => e.Role).HasMaxLength(50).IsUnicode(false).HasColumnName("role");
+            entity.Property(e => e.Token).HasMaxLength(100).IsUnicode(false).HasColumnName("token");
         });
 
         OnModelCreatingPartial(modelBuilder);
