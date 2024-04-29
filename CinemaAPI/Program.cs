@@ -50,7 +50,7 @@ builder.Services.AddEndpointsApiExplorer();
 // Define Swagger generation options and add Bearer token authentication
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "JWT Auth Sample", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "CinemaAPI", Version = "v1" });
     c.AddSecurityDefinition(
         "Bearer",
         new OpenApiSecurityScheme()

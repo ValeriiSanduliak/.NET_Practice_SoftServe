@@ -121,7 +121,7 @@ namespace CinemaAPI.Controllers
 
 
             var registeredUser = await _authService.Register(
-                new User(user.Name, user.Email, user.Password, user.Role)
+                new User(user.Name, user.Email, user.Password, "user")
             );
 
             // Return responses
