@@ -26,4 +26,6 @@ public partial class Movie
     public string Limitations { get; set; } = null!;
 
     public virtual Medium Media { get; set; } = null!;
+
+    public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
 }
