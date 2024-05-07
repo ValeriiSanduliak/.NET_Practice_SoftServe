@@ -11,5 +11,9 @@ public partial class Hall
 
     public string HallType { get; set; } = null!;
 
-    public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
+    public int NumberOfRows { get; set; }
+
+    public int NumberOfSeats { get; set; }
+
+    public virtual ICollection<SeatReservation> SeatReservations { get; set; } = new List<SeatReservation>();
 }
