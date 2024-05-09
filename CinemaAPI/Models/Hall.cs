@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CinemaAPI.Models;
 
@@ -15,5 +16,9 @@ public partial class Hall
 
     public int NumberOfSeats { get; set; }
 
-    public virtual ICollection<SeatReservation> SeatReservations { get; set; } = new List<SeatReservation>();
+    //public List<int> SeatReservationIds { get; set; } = new List<int>();
+
+    [JsonIgnore]
+    public virtual ICollection<SeatReservation> SeatReservations { get; set; } =
+        new List<SeatReservation>();
 }
