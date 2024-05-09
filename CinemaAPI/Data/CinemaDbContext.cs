@@ -223,15 +223,18 @@ public partial class CinemaDbContext : DbContext
             entity.HasKey(e => e.MovieSessionId).HasName("PK__MovieSes__111D7676F7950AF0");
 
             entity.Property(e => e.MovieSessionId).HasColumnName("MovieSessionID");
-            entity.Property(e => e.HallName)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.HallType)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.MovieTitle)
-                .HasMaxLength(200)
-                .IsUnicode(false);
+            entity.Property(e => e.HallId).HasColumnName("HallID");
+            entity.Property(e => e.MovieId).HasColumnName("MovieID");
+
+            entity.HasOne(d => d.Hall).WithMany(p => p.MovieSessions)
+                .HasForeignKey(d => d.HallId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("HallID");
+
+            entity.HasOne(d => d.Movie).WithMany(p => p.MovieSessions)
+                .HasForeignKey(d => d.MovieId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MovieSessions_MovieID");
         });
 
         modelBuilder.Entity<Price>(entity =>
