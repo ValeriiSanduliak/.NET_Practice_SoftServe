@@ -15,5 +15,7 @@ public partial class Hall
 
     public int NumberOfSeats { get; set; }
 
+    public virtual ICollection<MovieSession> MovieSessions { get; set; } = new List<MovieSession>();
+
     public virtual ICollection<SeatReservation> SeatReservations { get; set; } = new List<SeatReservation>();
 }
