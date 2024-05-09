@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CinemaAPI.Models;
 
-public partial class Medium
+public partial class Media
 {
     public int MediaId { get; set; }
 
