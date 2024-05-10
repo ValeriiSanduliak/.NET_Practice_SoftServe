@@ -1,6 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using CinemaAPI.Helpers;
-using Newtonsoft.Json;
 
 namespace CinemaAPI.DTOs
 {

@@ -22,51 +22,101 @@ namespace CinemaAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Movie>>> onGetAsync()
         {
-            var movies = await appDbContext
-                .MovieActors.Include(actor => actor.Actor)
-                .Include(m => m.Movie)
-                .ToListAsync();
-            /*var movies = await appDbContext.Movies.ToListAsync();*/
-            if (movies == null)
+            var movieList = (
+                from movie in appDbContext.Movies
+                join movieDirector in appDbContext.MovieDirectors
+                    on movie.MovieId equals movieDirector.MovieId
+                join director in appDbContext.Directors
+                    on movieDirector.DirectorId equals director.DirectorId
+                join movieGenre in appDbContext.MovieGenres
+                    on movie.MovieId equals movieGenre.MovieId
+                join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
+                select new
+                {
+                    movie,
+                    Director = new { director.DirectorFullName },
+                    Genre = new { genre.GenreName }
+                }
+            ).ToList();
+            var movieListWithActors = movieList
+                .Select(item => new
+                {
+                    item.movie.MovieId,
+                    item.movie.MovieTitle,
+                    item.movie.Duration,
+                    item.movie.Country,
+                    item.movie.WorldPremiere,
+                    item.movie.UkrainePremiere,
+                    item.movie.Rating,
+                    item.movie.EndOfShow,
+                    item.movie.Limitations,
+                    Actors = (
+                        from movieActor in appDbContext.MovieActors
+                        join actor in appDbContext.Actors on movieActor.ActorId equals actor.ActorId
+                        where movieActor.MovieId == item.movie.MovieId
+                        select new { actor.ActorFullName, actor.ActorPhoto }
+                    ).ToList(),
+                    item.Director,
+                    item.Genre
+                })
+                .GroupBy(m => m.MovieTitle)
+                .Select(g => g.First())
+                .ToList();
+            if (movieListWithActors == null)
             {
                 return NotFound();
             }
-            return Ok(movies);
+            return Ok(movieListWithActors);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<List<Movie>>> onGetMovieAsync(int id)
         {
-            var movies = await appDbContext
-                .MovieActors.Include(actor => actor.Actor)
-                .Include(m => m.Movie)
-                .Where(m => m.MovieId == id)
-                .ToListAsync();
+            var movieInfo = (
+                from movie in appDbContext.Movies
+                where movie.MovieId == id
+                join movieDirector in appDbContext.MovieDirectors
+                    on movie.MovieId equals movieDirector.MovieId
+                join director in appDbContext.Directors
+                    on movieDirector.DirectorId equals director.DirectorId
+                join movieGenre in appDbContext.MovieGenres
+                    on movie.MovieId equals movieGenre.MovieId
+                join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
+                select new
+                {
+                    movie,
+                    Director = new { director.DirectorFullName },
+                    Genre = new { genre.GenreName }
+                }
+            ).FirstOrDefault();
 
-            var directors = await appDbContext
-                .MovieDirectors.Include(director => director.Director)
-                .Where(m => m.MovieId == id)
-                .ToListAsync();
-
-            var movieGenres = await appDbContext
-                .MovieGenres.Include(genre => genre.Genre)
-                .Where(m => m.MovieId == id)
-                .ToListAsync();
-            if (movies == null)
+            if (movieInfo == null)
             {
                 return NotFound();
             }
-            else if (directors == null)
-            {
-                return NotFound();
-            }
-            else if (movieGenres == null)
-            {
-                return NotFound();
-            }
-            var combinedData = movies.Cast<object>().Concat(directors.Cast<object>()).ToList();
 
-            return Ok(combinedData);
+            var movieWithActors = new
+            {
+                movieInfo.movie.MovieId,
+                movieInfo.movie.MovieTitle,
+                movieInfo.movie.Duration,
+                movieInfo.movie.Country,
+                movieInfo.movie.WorldPremiere,
+                movieInfo.movie.UkrainePremiere,
+                movieInfo.movie.Rating,
+                movieInfo.movie.EndOfShow,
+                movieInfo.movie.Limitations,
+                Actors = (
+                    from movieActor in appDbContext.MovieActors
+                    join actor in appDbContext.Actors on movieActor.ActorId equals actor.ActorId
+                    where movieActor.MovieId == movieInfo.movie.MovieId
+                    select new { actor.ActorFullName, actor.ActorPhoto }
+                ).ToList(),
+                movieInfo.Director,
+                movieInfo.Genre
+            };
+
+            return Ok(movieWithActors);
         }
 
         [HttpPost]
@@ -109,6 +159,81 @@ namespace CinemaAPI.Controllers
                 // Повертаємо статус помилки валідації, якщо дані у запиті невірні
                 return BadRequest(ModelState);
             }
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<Movie>> OnPatchAsync(int id, [FromBody] MovieDTO movie)
+        {
+            try
+            {
+                var existingMovie = await appDbContext.Movies.FindAsync(id);
+                if (existingMovie == null)
+                {
+                    return NotFound();
+                }
+
+                // Update the existing actor entity with the values from the incoming entity
+                if (movie.MovieTitle != null)
+                {
+                    existingMovie.MovieTitle = movie.MovieTitle;
+                }
+
+                if (movie.MediaId != null)
+                {
+                    existingMovie.MediaId = movie.MediaId;
+                }
+
+                if (movie.Duration != null)
+                {
+                    existingMovie.Duration = movie.Duration;
+                }
+
+                if (movie.Country != null)
+                {
+                    existingMovie.Country = movie.Country;
+                }
+                if (movie.WorldPremiere != null)
+                {
+                    existingMovie.WorldPremiere = movie.WorldPremiere;
+                }
+                if (movie.UkrainePremiere != null)
+                {
+                    existingMovie.UkrainePremiere = movie.UkrainePremiere;
+                }
+                if (movie.Rating != null)
+                {
+                    existingMovie.Rating = movie.Rating;
+                }
+                if (movie.EndOfShow != null)
+                {
+                    existingMovie.EndOfShow = movie.EndOfShow;
+                }
+                if (movie.Limitations != null)
+                {
+                    existingMovie.Limitations = movie.Limitations;
+                }
+
+                await appDbContext.SaveChangesAsync();
+                return Ok(existingMovie);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Handle concurrency conflict
+                return Conflict("The movie has been modified or deleted by another process.");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Movie>> onDeleteAsync(int id)
+        {
+            var movie = await appDbContext.Movies.FindAsync(id);
+            if (movie == null)
+            {
+                return NotFound();
+            }
+            appDbContext.Movies.Remove(movie);
+            await appDbContext.SaveChangesAsync();
+            return Ok(movie);
         }
     }
 }
