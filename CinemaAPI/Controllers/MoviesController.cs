@@ -126,7 +126,15 @@ namespace CinemaAPI.Controllers
             {
                 try
                 {
-                    // Мапуємо об'єкт MovieDTO на об'єкт Movie
+                    // Перевіряємо, чи існує фільм з такою ж назвою вже в базі даних
+                    var existingMovie = await appDbContext.Movies.FirstOrDefaultAsync(m =>
+                        m.MovieTitle == movieDto.MovieTitle
+                    );
+                    if (existingMovie != null)
+                    {
+                        return Conflict("A movie with this title already exists.");
+                    }
+
                     var movie = new Movie
                     {
                         MovieTitle = movieDto.MovieTitle,
@@ -140,23 +148,19 @@ namespace CinemaAPI.Controllers
                         Limitations = movieDto.Limitations,
                     };
 
-                    // Додаємо фільм до контексту бази даних
                     appDbContext.Movies.Add(movie);
-                    // Зберігаємо зміни
                     await appDbContext.SaveChangesAsync();
                     var createdMovie = await appDbContext.Movies.FindAsync(movie.MovieId);
-                    // Повертаємо статус успішного створення об'єкта з його ідентифікатором
+
                     return StatusCode(201, createdMovie);
                 }
                 catch (Exception ex)
                 {
-                    // Повертаємо статус серверної помилки, якщо сталася помилка під час створення фільму
                     return StatusCode(500, ex);
                 }
             }
             else
             {
-                // Повертаємо статус помилки валідації, якщо дані у запиті невірні
                 return BadRequest(ModelState);
             }
         }
