@@ -31,12 +31,12 @@ namespace CinemaAPI.Controllers
                 join movieGenre in appDbContext.MovieGenres
                     on movie.MovieId equals movieGenre.MovieId
                 join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
-                select new
-                {
-                    movie,
-                    Director = new { director.DirectorFullName },
-                    Genre = new { genre.GenreName }
-                }
+                join MovieScreenwriter in appDbContext.MovieScreenwriters
+                    on movie.MovieId equals MovieScreenwriter.MovieId
+                join Screenwriter in appDbContext.Screenwriters
+                    on MovieScreenwriter.ScreenwriterId equals Screenwriter.ScreenwriterId
+                join Media in appDbContext.Media on movie.MediaId equals Media.MediaId
+                select new { movie }
             ).ToList();
             var movieListWithActors = movieList
                 .Select(item => new
@@ -56,12 +56,52 @@ namespace CinemaAPI.Controllers
                         where movieActor.MovieId == item.movie.MovieId
                         select new { actor.ActorFullName, actor.ActorPhoto }
                     ).ToList(),
-                    item.Director,
-                    item.Genre
+
+                    Director = string.Join(
+                        ", ",
+                        (
+                            from movieDirector in appDbContext.MovieDirectors
+                            join director in appDbContext.Directors
+                                on movieDirector.DirectorId equals director.DirectorId
+                            where movieDirector.MovieId == item.movie.MovieId
+                            select director.DirectorFullName
+                        )
+                    ),
+                    Genre = string.Join(
+                        ", ",
+                        (
+                            from movieGenre in appDbContext.MovieGenres
+                            join genre in appDbContext.Genres
+                                on movieGenre.GenreId equals genre.GenreId
+                            where movieGenre.MovieId == item.movie.MovieId
+                            select genre.GenreName
+                        )
+                    ),
+                    ScreenWriter = string.Join(
+                        ", ",
+                        (
+                            from movieScreenwriter in appDbContext.MovieScreenwriters
+                            join screenwriter in appDbContext.Screenwriters
+                                on movieScreenwriter.ScreenwriterId equals screenwriter.ScreenwriterId
+                            where movieScreenwriter.MovieId == item.movie.MovieId
+                            select screenwriter.ScreenwriterFullName
+                        )
+                    ),
+                    Media = (
+                        from media in appDbContext.Media
+                        where media.MediaId == item.movie.MediaId
+                        select new
+                        {
+                            media.MovieDescription,
+                            media.MoviePhoto,
+                            media.MovieTrailer
+                        }
+                    ).ToList()
                 })
                 .GroupBy(m => m.MovieTitle)
                 .Select(g => g.First())
                 .ToList();
+
             if (movieListWithActors == null)
             {
                 return NotFound();
@@ -82,12 +122,7 @@ namespace CinemaAPI.Controllers
                 join movieGenre in appDbContext.MovieGenres
                     on movie.MovieId equals movieGenre.MovieId
                 join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
-                select new
-                {
-                    movie,
-                    Director = new { director.DirectorFullName },
-                    Genre = new { genre.GenreName }
-                }
+                select new { movie }
             ).FirstOrDefault();
 
             if (movieInfo == null)
@@ -112,8 +147,26 @@ namespace CinemaAPI.Controllers
                     where movieActor.MovieId == movieInfo.movie.MovieId
                     select new { actor.ActorFullName, actor.ActorPhoto }
                 ).ToList(),
-                movieInfo.Director,
-                movieInfo.Genre
+
+                Director = string.Join(
+                    ", ",
+                    (
+                        from movieDirector in appDbContext.MovieDirectors
+                        join director in appDbContext.Directors
+                            on movieDirector.DirectorId equals director.DirectorId
+                        where movieDirector.MovieId == movieInfo.movie.MovieId
+                        select director.DirectorFullName
+                    )
+                ),
+                Genre = string.Join(
+                    ", ",
+                    (
+                        from movieGenre in appDbContext.MovieGenres
+                        join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
+                        where movieGenre.MovieId == movieInfo.movie.MovieId
+                        select genre.GenreName
+                    )
+                )
             };
 
             return Ok(movieWithActors);

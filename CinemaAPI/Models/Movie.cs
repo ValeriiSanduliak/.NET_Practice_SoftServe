@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace CinemaAPI.Models;
 
@@ -27,8 +26,6 @@ public partial class Movie
     public string Limitations { get; set; } = null!;
 
     public virtual Media Media { get; set; } = null!;
-
-    public virtual ICollection<MovieSession> MovieSessions { get; set; } = new List<MovieSession>();
 
     public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
 }

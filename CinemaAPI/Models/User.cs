@@ -1,32 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 
 namespace CinemaAPI.Models;
 
-public partial class User
+public class User
 {
     public int UserId { get; set; }
 
-    public string Name { get; set; } = null!;
+    public string UserName { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+    public string UserEmail { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string UserPassword { get; set; } = null!;
 
-    public string Role { get; set; } = null!;
+    public string UserRole { get; set; } = null!;
 
-    public bool IsActive { get; set; }
+    public bool IsReserved { get; set; }
 
     public string? Token { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+
+    public User() { }
 
     public User(string name, string email, string password, string role)
     {
-        Name = name;
-        Email = email;
-        Password = password;
-        Role = role;
+        UserName = name;
+        UserEmail = email;
+        UserPassword = password;
+        UserRole = role;
     }
 }
 
@@ -41,5 +46,4 @@ public class RegisterUser
     public string Name { get; set; } = "";
     public string Email { get; set; } = "";
     public string Password { get; set; } = "";
-    public string Role { get; set; } = "";
 }

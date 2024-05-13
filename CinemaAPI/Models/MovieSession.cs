@@ -19,9 +19,5 @@ public partial class MovieSession
 
     public int HallId { get; set; }
 
-    public virtual Hall Hall { get; set; } = null!;
-
-    public virtual Movie Movie { get; set; } = null!;
-
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }
