@@ -112,7 +112,7 @@ namespace CinemaAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<List<Movie>>> onGetMovieAsync(int id)
         {
-            var movieInfo = (
+            var movieList = (
                 from movie in appDbContext.Movies
                 where movie.MovieId == id
                 join movieDirector in appDbContext.MovieDirectors
@@ -122,54 +122,82 @@ namespace CinemaAPI.Controllers
                 join movieGenre in appDbContext.MovieGenres
                     on movie.MovieId equals movieGenre.MovieId
                 join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
+                join MovieScreenwriter in appDbContext.MovieScreenwriters
+                    on movie.MovieId equals MovieScreenwriter.MovieId
+                join Screenwriter in appDbContext.Screenwriters
+                    on MovieScreenwriter.ScreenwriterId equals Screenwriter.ScreenwriterId
+                join Media in appDbContext.Media on movie.MediaId equals Media.MediaId
                 select new { movie }
-            ).FirstOrDefault();
+            ).ToList();
+            var movieListWithActors = movieList
+                .Select(item => new
+                {
+                    item.movie.MovieId,
+                    item.movie.MovieTitle,
+                    item.movie.Duration,
+                    item.movie.Country,
+                    item.movie.WorldPremiere,
+                    item.movie.UkrainePremiere,
+                    item.movie.Rating,
+                    item.movie.EndOfShow,
+                    item.movie.Limitations,
+                    Actors = (
+                        from movieActor in appDbContext.MovieActors
+                        join actor in appDbContext.Actors on movieActor.ActorId equals actor.ActorId
+                        where movieActor.MovieId == item.movie.MovieId
+                        select new { actor.ActorFullName, actor.ActorPhoto }
+                    ).ToList(),
 
-            if (movieInfo == null)
+                    Director = string.Join(
+                        ", ",
+                        (
+                            from movieDirector in appDbContext.MovieDirectors
+                            join director in appDbContext.Directors
+                                on movieDirector.DirectorId equals director.DirectorId
+                            where movieDirector.MovieId == item.movie.MovieId
+                            select director.DirectorFullName
+                        )
+                    ),
+                    Genre = string.Join(
+                        ", ",
+                        (
+                            from movieGenre in appDbContext.MovieGenres
+                            join genre in appDbContext.Genres
+                                on movieGenre.GenreId equals genre.GenreId
+                            where movieGenre.MovieId == item.movie.MovieId
+                            select genre.GenreName
+                        )
+                    ),
+                    ScreenWriter = string.Join(
+                        ", ",
+                        (
+                            from movieScreenwriter in appDbContext.MovieScreenwriters
+                            join screenwriter in appDbContext.Screenwriters
+                                on movieScreenwriter.ScreenwriterId equals screenwriter.ScreenwriterId
+                            where movieScreenwriter.MovieId == item.movie.MovieId
+                            select screenwriter.ScreenwriterFullName
+                        )
+                    ),
+                    Media = (
+                        from media in appDbContext.Media
+                        where media.MediaId == item.movie.MediaId
+                        select new
+                        {
+                            media.MovieDescription,
+                            media.MoviePhoto,
+                            media.MovieTrailer
+                        }
+                    ).ToList()
+                })
+                .GroupBy(m => m.MovieTitle)
+                .Select(g => g.First())
+                .ToList();
+
+            if (movieListWithActors == null)
             {
                 return NotFound();
             }
-
-            var movieWithActors = new
-            {
-                movieInfo.movie.MovieId,
-                movieInfo.movie.MovieTitle,
-                movieInfo.movie.Duration,
-                movieInfo.movie.Country,
-                movieInfo.movie.WorldPremiere,
-                movieInfo.movie.UkrainePremiere,
-                movieInfo.movie.Rating,
-                movieInfo.movie.EndOfShow,
-                movieInfo.movie.Limitations,
-                Actors = (
-                    from movieActor in appDbContext.MovieActors
-                    join actor in appDbContext.Actors on movieActor.ActorId equals actor.ActorId
-                    where movieActor.MovieId == movieInfo.movie.MovieId
-                    select new { actor.ActorFullName, actor.ActorPhoto }
-                ).ToList(),
-
-                Director = string.Join(
-                    ", ",
-                    (
-                        from movieDirector in appDbContext.MovieDirectors
-                        join director in appDbContext.Directors
-                            on movieDirector.DirectorId equals director.DirectorId
-                        where movieDirector.MovieId == movieInfo.movie.MovieId
-                        select director.DirectorFullName
-                    )
-                ),
-                Genre = string.Join(
-                    ", ",
-                    (
-                        from movieGenre in appDbContext.MovieGenres
-                        join genre in appDbContext.Genres on movieGenre.GenreId equals genre.GenreId
-                        where movieGenre.MovieId == movieInfo.movie.MovieId
-                        select genre.GenreName
-                    )
-                )
-            };
-
-            return Ok(movieWithActors);
+            return Ok(movieListWithActors);
         }
 
         [HttpPost]

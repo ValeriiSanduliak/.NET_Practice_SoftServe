@@ -22,10 +22,4 @@ namespace CinemaAPI.DTOs
 
         public string Limitations { get; set; } = null!;
     }
-
-    public class MovieActorDTO
-    {
-        public string MovieTitle { get; set; }
-        public string Actors { get; set; }
-    }
 }
