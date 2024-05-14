@@ -27,5 +27,15 @@ public partial class Movie
 
     public virtual Media Media { get; set; } = null!;
 
+    public virtual ICollection<MovieActor> MovieActors { get; set; } = new List<MovieActor>();
+
+    public virtual ICollection<MovieDirector> MovieDirectors { get; set; } =
+        new List<MovieDirector>();
+
+    public virtual ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
+
+    public virtual ICollection<MovieScreenwriter> MovieScreenwriters { get; set; } =
+        new List<MovieScreenwriter>();
+
     public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
 }

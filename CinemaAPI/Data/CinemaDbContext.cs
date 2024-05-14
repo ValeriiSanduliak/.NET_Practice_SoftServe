@@ -115,44 +115,50 @@ public partial class CinemaDbContext : DbContext
 
         modelBuilder.Entity<MovieActor>(entity =>
         {
-            entity.HasNoKey().ToTable("Movie_Actor");
+            entity.HasKey(e => e.MovieActorId).HasName("PK__Movie_Ac__0F76A5839445775C");
 
+            entity.ToTable("Movie_Actor");
+
+            entity.Property(e => e.MovieActorId).HasColumnName("MovieActorID");
             entity.Property(e => e.ActorId).HasColumnName("ActorID");
-            entity.Property(e => e.ActorNickname).HasMaxLength(100).IsUnicode(false);
+            entity.Property(e => e.ActorNickname).HasMaxLength(50).IsUnicode(false);
             entity.Property(e => e.MovieId).HasColumnName("MovieID");
 
             entity
                 .HasOne(d => d.Actor)
-                .WithMany()
+                .WithMany(p => p.MovieActors)
                 .HasForeignKey(d => d.ActorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Movie_Act__Actor__02084FDA");
+                .HasConstraintName("FK__Movie_Act__Actor__40F9A68C");
 
             entity
                 .HasOne(d => d.Movie)
-                .WithMany()
+                .WithMany(p => p.MovieActors)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Movie_Act__Movie__01142BA1");
+                .HasConstraintName("FK__Movie_Act__Movie__40058253");
         });
 
         modelBuilder.Entity<MovieDirector>(entity =>
         {
-            entity.HasNoKey().ToTable("Movie_Director");
+            entity.HasKey(e => e.MovieDirectorId).HasName("PK__Movie_Di__AEB81F2EA77926CE");
 
+            entity.ToTable("Movie_Director");
+
+            entity.Property(e => e.MovieDirectorId).HasColumnName("MovieDirectorID");
             entity.Property(e => e.DirectorId).HasColumnName("DirectorID");
             entity.Property(e => e.MovieId).HasColumnName("MovieID");
 
             entity
                 .HasOne(d => d.Director)
-                .WithMany()
+                .WithMany(p => p.MovieDirectors)
                 .HasForeignKey(d => d.DirectorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Dir__Direc__7C4F7684");
 
             entity
                 .HasOne(d => d.Movie)
-                .WithMany()
+                .WithMany(p => p.MovieDirectors)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Dir__Movie__7B5B524B");
@@ -160,21 +166,24 @@ public partial class CinemaDbContext : DbContext
 
         modelBuilder.Entity<MovieGenre>(entity =>
         {
-            entity.HasNoKey().ToTable("Movie_Genre");
+            entity.HasKey(e => e.MovieGenreId).HasName("PK__Movie_Ge__C18CDB603C2FCA98");
 
+            entity.ToTable("Movie_Genre");
+
+            entity.Property(e => e.MovieGenreId).HasColumnName("MovieGenreID");
             entity.Property(e => e.GenreId).HasColumnName("GenreID");
             entity.Property(e => e.MovieId).HasColumnName("MovieID");
 
             entity
                 .HasOne(d => d.Genre)
-                .WithMany()
+                .WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.GenreId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Gen__Genre__797309D9");
 
             entity
                 .HasOne(d => d.Movie)
-                .WithMany()
+                .WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Gen__Movie__787EE5A0");
@@ -182,21 +191,24 @@ public partial class CinemaDbContext : DbContext
 
         modelBuilder.Entity<MovieScreenwriter>(entity =>
         {
-            entity.HasNoKey().ToTable("Movie_Screenwriter");
+            entity.HasKey(e => e.MovieScreenwriterId).HasName("PK__Movie_Sc__82D1508E39AA7AA5");
 
+            entity.ToTable("Movie_Screenwriter");
+
+            entity.Property(e => e.MovieScreenwriterId).HasColumnName("MovieScreenwriterID");
             entity.Property(e => e.MovieId).HasColumnName("MovieID");
             entity.Property(e => e.ScreenwriterId).HasColumnName("ScreenwriterID");
 
             entity
                 .HasOne(d => d.Movie)
-                .WithMany()
+                .WithMany(p => p.MovieScreenwriters)
                 .HasForeignKey(d => d.MovieId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Scr__Movie__7E37BEF6");
 
             entity
                 .HasOne(d => d.Screenwriter)
-                .WithMany()
+                .WithMany(p => p.MovieScreenwriters)
                 .HasForeignKey(d => d.ScreenwriterId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Movie_Scr__Scree__7F2BE32F");
@@ -297,11 +309,11 @@ public partial class CinemaDbContext : DbContext
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.IsActive).HasDefaultValue(false).HasColumnName("isActive");
-            entity.Property(e => e.Token).HasMaxLength(200).IsUnicode(false);
+            entity.Property(e => e.Token).HasMaxLength(50).IsUnicode(false);
             entity.Property(e => e.UserEmail).HasMaxLength(200).IsUnicode(false);
             entity.Property(e => e.UserName).HasMaxLength(200).IsUnicode(false);
             entity.Property(e => e.UserPassword).HasMaxLength(200).IsUnicode(false);
-            entity.Property(e => e.UserRole).HasMaxLength(200).IsUnicode(false);
+            entity.Property(e => e.UserRole).HasMaxLength(50).IsUnicode(false);
         });
 
         OnModelCreatingPartial(modelBuilder);

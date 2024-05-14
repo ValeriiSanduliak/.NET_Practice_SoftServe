@@ -9,6 +9,8 @@ public partial class MovieDirector
 
     public int DirectorId { get; set; }
 
+    public int MovieDirectorId { get; set; }
+
     public virtual Director Director { get; set; } = null!;
 
     public virtual Movie Movie { get; set; } = null!;

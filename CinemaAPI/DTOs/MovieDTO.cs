@@ -1,12 +1,8 @@
-﻿using System.Text.Json.Serialization;
-
-namespace CinemaAPI.DTOs
+﻿namespace CinemaAPI.DTOs
 {
     public class MovieDTO
     {
         public string MovieTitle { get; set; } = null!;
-
-        public int MediaId { get; set; }
 
         public TimeOnly Duration { get; set; }
 
@@ -21,5 +17,20 @@ namespace CinemaAPI.DTOs
         public DateOnly EndOfShow { get; set; }
 
         public string Limitations { get; set; } = null!;
+
+        public int MediaId { get; set; }
+
+        public List<ActorInfo> Actors { get; set; }
+        public List<int> GenreId { get; set; }
+
+        public List<int> DirectorId { get; set; }
+
+        public List<int> ScreenwriterId { get; set; }
     }
+}
+
+public class ActorInfo
+{
+    public int ActorId { get; set; }
+    public string ActorNickname { get; set; }
 }

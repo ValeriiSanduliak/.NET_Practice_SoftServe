@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 
 namespace CinemaAPI.Models;
 
-public class User
+public partial class User
 {
     public int UserId { get; set; }
 
@@ -14,13 +13,13 @@ public class User
 
     public string UserPassword { get; set; } = null!;
 
-    public string UserRole { get; set; } = null!;
-
     public bool IsReserved { get; set; }
+
+    public bool? IsActive { get; set; }
 
     public string? Token { get; set; }
 
-    public bool? IsActive { get; set; }
+    public string? UserRole { get; set; }
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 
