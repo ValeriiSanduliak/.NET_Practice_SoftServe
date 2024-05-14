@@ -16,4 +16,6 @@ public partial class Actor
     public string? ActorCountry { get; set; }
 
     public int? ActorHeight { get; set; }
+
+    public virtual ICollection<MovieActor> MovieActors { get; set; } = new List<MovieActor>();
 }

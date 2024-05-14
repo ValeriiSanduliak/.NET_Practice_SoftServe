@@ -76,7 +76,7 @@ namespace CinemaAPI.Controllers
             {
                 return BadRequest("Invalid email format");
             }
-            else if (_appDbContext.Users.Any(u => u.Email == user.Email))
+            else if (_appDbContext.Users.Any(u => u.UserEmail == user.Email))
             {
                 return BadRequest("Email is already in use");
             }
@@ -121,7 +121,7 @@ namespace CinemaAPI.Controllers
 
 
             var registeredUser = await _authService.Register(
-                new User(user.Name, user.Email, user.Password, user.Role)
+                new User(user.Name, user.Email, user.Password, "user")
             );
 
             // Return responses
