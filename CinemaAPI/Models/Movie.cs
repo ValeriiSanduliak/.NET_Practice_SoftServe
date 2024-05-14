@@ -36,6 +36,7 @@ public partial class Movie
 
     public virtual ICollection<MovieScreenwriter> MovieScreenwriters { get; set; } =
         new List<MovieScreenwriter>();
+    public virtual ICollection<MovieSession> MovieSessions { get; set; } = new List<MovieSession>();
 
     public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
 }
