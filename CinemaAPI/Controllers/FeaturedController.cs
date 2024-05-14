@@ -20,13 +20,13 @@ namespace CinemaAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Movie>>> onGetAsync()
         {
-            var sessionsList = (from session in appDbContext.MovieSessions
+            var endDate = new DateOnly(2024, 6, 20);
+
+            var sessionsList = await (from session in appDbContext.MovieSessions
                                 join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
                                 join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                where movie.EndOfShow.Year >= 2024 &&
-                                    movie.EndOfShow.Month >= 6 &&
-                                    movie.EndOfShow.Day >= 4
-                                select new
+                                where movie.EndOfShow >= endDate
+                                select new 
                                 {
                                     MovieSessionId = session.MovieSessionId,
                                     MovieTitle = movie.MovieTitle,
@@ -40,7 +40,7 @@ namespace CinemaAPI.Controllers
                                     MiddlePrice = session.MiddlePrice,
                                     TheHighestPrice = session.TheHighestPrice
                                 }        
-                ).ToList();
+                ).ToListAsync();
 
             return Ok(sessionsList);
         }
