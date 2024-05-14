@@ -82,6 +82,20 @@ public partial class CinemaDbContext : DbContext
             entity.Property(e => e.HallId).HasColumnName("HallID");
             entity.Property(e => e.HallName).HasMaxLength(100).IsUnicode(false);
             entity.Property(e => e.HallType).HasMaxLength(20).IsUnicode(false);
+
+            // Configure relationship with MovieSession
+            entity
+                .HasMany(h => h.MovieSessions)
+                .WithOne(ms => ms.Hall)
+                .HasForeignKey(ms => ms.HallId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationship with SeatReservation
+            entity
+                .HasMany(h => h.SeatReservations)
+                .WithOne(sr => sr.Hall)
+                .HasForeignKey(sr => sr.HallId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Media>(entity =>

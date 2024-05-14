@@ -1,5 +1,8 @@
-﻿using CinemaAPI.Data;
+﻿using System;
+using CinemaAPI.Data;
+using CinemaAPI.DTOs;
 using CinemaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,23 +21,79 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Actor>>> onGetAsync()
+        public async Task<ActionResult<List<ActorDTO>>> onGetAsync()
         {
-            var actors = await appDbContext.Actors.ToListAsync();
-            return Ok(actors);
+            var actors = await appDbContext
+                .Actors.Include(a => a.MovieActors)
+                .ThenInclude(ma => ma.Movie)
+                .ToListAsync();
+
+            var actorDTOs = actors
+                .Select(actor => new ActorDTO
+                {
+                    ActorId = actor.ActorId,
+                    ActorFullName = actor.ActorFullName,
+                    ActorPhoto = actor.ActorPhoto,
+                    ActorBirthday = actor.ActorBirthday,
+                    ActorCountry = actor.ActorCountry,
+                    ActorHeight = actor.ActorHeight,
+                    Movies = actor
+                        .MovieActors.Select(ma => new MovieActorListDTO
+                        {
+                            MovieId = ma.MovieId,
+                            MovieTitle = ma.Movie.MovieTitle,
+                            RoleName = ma.ActorNickname
+                        })
+                        .ToList()
+                })
+                .ToList();
+
+            return Ok(actorDTOs);
         }
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<Actor>>> onGetAsync()
+        //{
+        //    var actors = await appDbContext.Actors.ToListAsync();
+
+        //    return Ok(actors);
+        //}
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<Actor>> onGetActorAsync(int id)
+        public async Task<ActionResult<ActorDTO>> onGetAsync(int id)
         {
-            var actor = await appDbContext.Actors.FindAsync(id);
+            var actor = await appDbContext
+                .Actors.Include(a => a.MovieActors)
+                .ThenInclude(ma => ma.Movie)
+                .FirstOrDefaultAsync(a => a.ActorId == id);
+
             if (actor == null)
             {
                 return NotFound();
             }
-            return Ok(actor);
+
+            var actorDTO = new ActorDTO
+            {
+                ActorId = actor.ActorId,
+                ActorFullName = actor.ActorFullName,
+                ActorPhoto = actor.ActorPhoto,
+                ActorBirthday = actor.ActorBirthday,
+                ActorCountry = actor.ActorCountry,
+                ActorHeight = actor.ActorHeight,
+                Movies = actor
+                    .MovieActors.Select(ma => new MovieActorListDTO
+                    {
+                        MovieId = ma.MovieId,
+                        MovieTitle = ma.Movie.MovieTitle,
+                        RoleName = ma.ActorNickname
+                    })
+                    .ToList()
+            };
+
+            return Ok(actorDTO);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Actor>> onPostAsync([FromBody] Actor actor)
         {
@@ -57,6 +116,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<Actor>> OnPatchAsync(int id, [FromBody] Actor actor)
         {
@@ -99,6 +159,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Actor>> onDeleteAsync(int id)
         {
