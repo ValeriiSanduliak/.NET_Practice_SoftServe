@@ -1,6 +1,6 @@
 ﻿namespace CinemaAPI.DTOs
 {
-    public class ActorDTO
+    public class MovieActorDTO
     {
         public int ActorId { get; set; }
 

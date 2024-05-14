@@ -57,7 +57,7 @@ public class MovieInfoDTO
     public DateOnly EndOfShow { get; set; }
 
     public string Limitations { get; set; } = null!;
-    public virtual ICollection<ActorDTO> Actors { get; set; } = new List<ActorDTO>();
+    public virtual ICollection<MovieActorDTO> Actors { get; set; } = new List<MovieActorDTO>();
     public virtual ICollection<DirectorDTO> Directors { get; set; } = new List<DirectorDTO>();
     public virtual MediaGetDTO Media { get; set; } = null!;
     public virtual ICollection<GenreDTO> Genres { get; set; } = new List<GenreDTO>();

@@ -52,7 +52,7 @@ namespace CinemaAPI.Controllers
                     EndOfShow = movie.EndOfShow,
                     Limitations = movie.Limitations,
                     Actors = movie
-                        .MovieActors.Select(ma => new ActorDTO
+                        .MovieActors.Select(ma => new MovieActorDTO
                         {
                             ActorId = ma.ActorId,
                             ActorFullName = ma.Actor.ActorFullName,
@@ -130,7 +130,7 @@ namespace CinemaAPI.Controllers
                 EndOfShow = movie.EndOfShow,
                 Limitations = movie.Limitations,
                 Actors = movie
-                    .MovieActors.Select(ma => new ActorDTO
+                    .MovieActors.Select(ma => new MovieActorDTO
                     {
                         ActorId = ma.ActorId,
                         ActorFullName = ma.Actor.ActorFullName,
