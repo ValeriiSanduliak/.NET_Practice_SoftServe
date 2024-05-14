@@ -7,5 +7,13 @@
         public string ActorFullName { get; set; } = null!;
 
         public string? ActorPhoto { get; set; }
+        
+    public class MovieActorListDTO
+    {
+        public int MovieId { get; set; }
+
+        public string MovieTitle { get; set; }
+
+        public string RoleName { get; set; }
     }
 }

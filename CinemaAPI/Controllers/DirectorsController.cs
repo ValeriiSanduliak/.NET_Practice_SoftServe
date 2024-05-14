@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using CinemaAPI.Data;
+using CinemaAPI.DTOs;
 using CinemaAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
