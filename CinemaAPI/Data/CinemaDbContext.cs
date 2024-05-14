@@ -24,7 +24,7 @@ public partial class CinemaDbContext : DbContext
 
     public virtual DbSet<Hall> Halls { get; set; }
 
-    public virtual DbSet<Medium> Media { get; set; }
+    public virtual DbSet<Media> Media { get; set; }
 
     public virtual DbSet<Movie> Movies { get; set; }
 
@@ -100,7 +100,7 @@ public partial class CinemaDbContext : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<Medium>(entity =>
+        modelBuilder.Entity<Media>(entity =>
         {
             entity.HasKey(e => e.MediaId).HasName("PK__Media__B2C2B5AF9E059215");
 
