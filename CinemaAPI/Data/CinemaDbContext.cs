@@ -142,14 +142,14 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Actor)
                 .WithMany(p => p.MovieActors)
                 .HasForeignKey(d => d.ActorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Act__Actor__40F9A68C");
 
             entity
                 .HasOne(d => d.Movie)
                 .WithMany(p => p.MovieActors)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Act__Movie__40058253");
         });
 
@@ -167,14 +167,14 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Director)
                 .WithMany(p => p.MovieDirectors)
                 .HasForeignKey(d => d.DirectorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Dir__Direc__7C4F7684");
 
             entity
                 .HasOne(d => d.Movie)
                 .WithMany(p => p.MovieDirectors)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Dir__Movie__7B5B524B");
         });
 
@@ -192,14 +192,14 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Genre)
                 .WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.GenreId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Gen__Genre__797309D9");
 
             entity
                 .HasOne(d => d.Movie)
                 .WithMany(p => p.MovieGenres)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Gen__Movie__787EE5A0");
         });
 
@@ -217,14 +217,14 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Movie)
                 .WithMany(p => p.MovieScreenwriters)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Scr__Movie__7E37BEF6");
 
             entity
                 .HasOne(d => d.Screenwriter)
                 .WithMany(p => p.MovieScreenwriters)
                 .HasForeignKey(d => d.ScreenwriterId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movie_Scr__Scree__7F2BE32F");
         });
 
@@ -264,14 +264,14 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Movie)
                 .WithMany(p => p.Prices)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Prices__MovieID__08B54D69");
 
             entity
                 .HasOne(d => d.SeatReservation)
                 .WithMany(p => p.Prices)
                 .HasForeignKey(d => d.SeatReservationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Prices__SeatRese__09A971A2");
         });
 
@@ -288,21 +288,21 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.MovieSession)
                 .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.MovieSessionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Reservati__Movie__151B244E");
 
             entity
                 .HasOne(d => d.Price)
                 .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.PriceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Reservati__Price__160F4887");
 
             entity
                 .HasOne(d => d.User)
                 .WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Reservati__UserI__14270015");
         });
 
