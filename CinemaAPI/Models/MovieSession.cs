@@ -7,7 +7,7 @@ public partial class MovieSession
 {
     public int MovieSessionId { get; set; }
 
-    public string MovieTitle { get; set; } = null!;
+    public int MovieId { get; set; }
 
     public TimeOnly? StartTime { get; set; }
 
@@ -17,9 +17,11 @@ public partial class MovieSession
 
     public int? TheHighestPrice { get; set; }
 
-    public string HallName { get; set; } = null!;
+    public int HallId { get; set; }
 
-    public string HallType { get; set; } = null!;
+    public virtual Hall Hall { get; set; } = null!;
+
+    public virtual Movie Movie { get; set; } = null!;
 
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }

@@ -27,5 +27,7 @@ public partial class Movie
 
     public virtual Media Media { get; set; } = null!;
 
+    public virtual ICollection<MovieSession> MovieSessions { get; set; } = new List<MovieSession>();
+
     public virtual ICollection<Price> Prices { get; set; } = new List<Price>();
 }
