@@ -1,4 +1,5 @@
-using System.Text;
+﻿using System.Text;
+using System.Text.Json.Serialization;
 using CinemaAPI.Data;
 using CinemaAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<CinemaDbContext>(options =>
 });
 builder.Services.AddControllers();
 
+/*    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
+*/
 // Register Auth Service that handles JWT creation and validation
 builder.Services.AddScoped<IAuthService, AuthService>();
 
