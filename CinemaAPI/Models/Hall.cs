@@ -19,5 +19,6 @@ public partial class Hall
     public virtual ICollection<MovieSession> MovieSessions { get; set; } = new List<MovieSession>();
 
     [JsonIgnore]
-    public virtual ICollection<SeatReservation> SeatReservations { get; set; } = new List<SeatReservation>();
+    public virtual ICollection<SeatReservation> SeatReservations { get; set; } =
+        new List<SeatReservation>();
 }

@@ -82,6 +82,20 @@ public partial class CinemaDbContext : DbContext
             entity.Property(e => e.HallId).HasColumnName("HallID");
             entity.Property(e => e.HallName).HasMaxLength(100).IsUnicode(false);
             entity.Property(e => e.HallType).HasMaxLength(20).IsUnicode(false);
+
+            // Configure relationship with MovieSession
+            entity
+                .HasMany(h => h.MovieSessions)
+                .WithOne(ms => ms.Hall)
+                .HasForeignKey(ms => ms.HallId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure relationship with SeatReservation
+            entity
+                .HasMany(h => h.SeatReservations)
+                .WithOne(sr => sr.Hall)
+                .HasForeignKey(sr => sr.HallId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Media>(entity =>
@@ -109,7 +123,7 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Media)
                 .WithMany(p => p.Movies)
                 .HasForeignKey(d => d.MediaId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Movies__MediaID__5EBF139D");
         });
 
@@ -222,14 +236,18 @@ public partial class CinemaDbContext : DbContext
             entity.Property(e => e.HallId).HasColumnName("HallID");
             entity.Property(e => e.MovieId).HasColumnName("MovieID");
 
-            entity.HasOne(d => d.Hall).WithMany(p => p.MovieSessions)
+            entity
+                .HasOne(d => d.Hall)
+                .WithMany(p => p.MovieSessions)
                 .HasForeignKey(d => d.HallId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("HallID");
 
-            entity.HasOne(d => d.Movie).WithMany(p => p.MovieSessions)
+            entity
+                .HasOne(d => d.Movie)
+                .WithMany(p => p.MovieSessions)
                 .HasForeignKey(d => d.MovieId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_MovieSessions_MovieID");
         });
 
@@ -309,7 +327,7 @@ public partial class CinemaDbContext : DbContext
                 .HasOne(d => d.Hall)
                 .WithMany(p => p.SeatReservations)
                 .HasForeignKey(d => d.HallId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__SeatReser__HallI__04E4BC85");
         });
 
