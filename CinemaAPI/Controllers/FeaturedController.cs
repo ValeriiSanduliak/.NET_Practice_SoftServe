@@ -18,7 +18,7 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Movie>>> onGetAsync()
+        public async Task<ActionResult<List<MovieSession>>> onGetAsync()
         {
             var endDate = new DateOnly(2024, 6, 20);
 
