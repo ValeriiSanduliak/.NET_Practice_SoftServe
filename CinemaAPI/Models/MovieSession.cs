@@ -18,7 +18,7 @@ public partial class MovieSession
     public int? TheHighestPrice { get; set; }
 
     public int HallId { get; set; }
-
+  
     public virtual Hall Hall { get; set; } = null!;
 
     public virtual Movie Movie { get; set; } = null!;
