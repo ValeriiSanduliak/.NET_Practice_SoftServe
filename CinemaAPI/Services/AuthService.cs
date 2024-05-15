@@ -30,12 +30,14 @@ namespace CinemaAPI.Services
         {
             // Search user in DB and verify password
             User? user = await _appDbContext.Users.FirstOrDefaultAsync(u =>
-                u.Email == loginUser.Email
+                u.UserEmail == loginUser.UserEmail
             );
 
-            Console.WriteLine($"User logged in: {user.Name} ({user.Email}), Role: {user.Role}");
+            Console.WriteLine(
+                $"User logged in: {user.UserName} ({user.UserEmail}), Role: {user.UserRole}"
+            );
 
-            if (user == null || Argon2.Verify(user.Password, loginUser.Password) == false)
+            if (user == null || Argon2.Verify(user.UserPassword, loginUser.UserPassword) == false)
             {
                 return null; //returning null intentionally to show that login was unsuccessful
             }
@@ -47,9 +49,9 @@ namespace CinemaAPI.Services
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.GivenName, user.Name),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Email, user.UserEmail),
+                new Claim(ClaimTypes.GivenName, user.UserName),
+                new Claim(ClaimTypes.Role, user.UserRole)
             };
 
             // Create token descriptor
@@ -80,7 +82,7 @@ namespace CinemaAPI.Services
         {
             // Add user to DB
 
-            registerUser.Password = Argon2.Hash(registerUser.Password);
+            registerUser.UserPassword = Argon2.Hash(registerUser.UserPassword);
             _appDbContext.Users.Add(registerUser);
             await _appDbContext.SaveChangesAsync();
 
