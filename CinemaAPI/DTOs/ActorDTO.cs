@@ -1,4 +1,5 @@
-﻿using CinemaAPI.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using CinemaAPI.Models;
 
 namespace CinemaAPI.DTOs
 {
@@ -11,7 +12,18 @@ namespace CinemaAPI.DTOs
         public string? ActorCountry { get; set; }
         public int? ActorHeight { get; set; }
 
-        //public List<MovieActorDTO> MovieActors { get; set; } = new List<MovieActorDTO>();
-        public List<MovieActorListDTO> Movies { get; set; } = new List<MovieActorListDTO>();
+        public List<MovieActorList> Movies { get; set; } = new List<MovieActorList>();
+    }
+
+    public class ActorPostDTO
+    {
+        [Required(ErrorMessage = "ActorFullName is required")]
+        public string ActorFullName { get; set; }
+        public string? ActorPhoto { get; set; }
+        public DateOnly? ActorBirthday { get; set; }
+        public string? ActorCountry { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "ActorHeight must be a positive number")]
+        public int? ActorHeight { get; set; }
     }
 }

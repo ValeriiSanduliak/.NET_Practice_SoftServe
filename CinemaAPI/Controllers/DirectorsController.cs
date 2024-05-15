@@ -19,30 +19,84 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
+        //[HttpGet]
+        //public async Task<ActionResult<List<Director>>> onGetAsync()
+        //{
+        //    var directors = await appDbContext.Directors.ToListAsync();
+        //    return Ok(directors);
+        //}
         [HttpGet]
-        public async Task<ActionResult<List<Director>>> onGetAsync()
+        public async Task<ActionResult<List<DirectorMovieDTO>>> onGetAsync()
         {
-            var directors = await appDbContext.Directors.ToListAsync();
-            return Ok(directors);
+            var directors = await appDbContext
+                .Directors.Include(d => d.MovieDirectors)
+                .ThenInclude(md => md.Movie)
+                .ToListAsync();
+
+            var directorDTOs = directors
+                .Select(director => new DirectorDTO
+                {
+                    DirectorId = director.DirectorId,
+                    DirectorFullName = director.DirectorFullName,
+                    Movies = director
+                        .MovieDirectors.Select(md => new MovieDirectorList
+                        {
+                            MovieId = md.MovieId,
+                            MovieTitle = md.Movie.MovieTitle
+                        })
+                        .ToList()
+                })
+                .ToList();
+
+            return Ok(directorDTOs);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Director>> onGetDirectorAsync(int id)
         {
-            var director = await appDbContext.Directors.FindAsync(id);
-            if (director == null)
+            //var director = await appDbContext.Directors.FindAsync(id);
+            //if (director == null)
+            //{
+            //    return NotFound();
+            //}
+            //return Ok(director);
+            var director = await appDbContext
+                .Directors.Include(d => d.MovieDirectors)
+                .ThenInclude(md => md.Movie)
+                .FirstOrDefaultAsync(d => d.DirectorId == id);
+
+            var directorDTO = new DirectorDTO
             {
-                return NotFound();
-            }
-            return Ok(director);
+                DirectorId = director.DirectorId,
+                DirectorFullName = director.DirectorFullName,
+                Movies = director
+                    .MovieDirectors.Select(md => new MovieDirectorList
+                    {
+                        MovieId = md.MovieId,
+                        MovieTitle = md.Movie.MovieTitle
+                    })
+                    .ToList()
+            };
+
+            return Ok(directorDTO);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Director>> onPostAsync([FromBody] Director director)
+        public async Task<ActionResult<DirectorPostDTO>> onPostAsync(
+            [FromBody] DirectorPostDTO directorPostDTO
+        )
         {
-            appDbContext.Directors.Add(director);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var newDirector = new Director { DirectorFullName = directorPostDTO.DirectorFullName };
+
+            appDbContext.Directors.Add(newDirector);
             await appDbContext.SaveChangesAsync();
-            var createdDirector = await appDbContext.Directors.FindAsync(director.DirectorId);
+
+            var createdDirector = await appDbContext.Directors.FindAsync(newDirector.DirectorId);
 
             if (createdDirector != null)
             {
@@ -84,7 +138,10 @@ namespace CinemaAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Director>> onDeleteAsync(int id)
         {
-            var director = await appDbContext.Directors.FindAsync(id);
+            var director = await appDbContext
+                .Directors.Include(a => a.MovieDirectors)
+                .FirstOrDefaultAsync(a => a.DirectorId == id);
+
             if (director == null)
             {
                 return NotFound();

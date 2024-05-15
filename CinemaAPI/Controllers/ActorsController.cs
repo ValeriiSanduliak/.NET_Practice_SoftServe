@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Metadata.Ecma335;
 using CinemaAPI.Data;
 using CinemaAPI.DTOs;
 using CinemaAPI.Models;
@@ -38,7 +39,7 @@ namespace CinemaAPI.Controllers
                     ActorCountry = actor.ActorCountry,
                     ActorHeight = actor.ActorHeight,
                     Movies = actor
-                        .MovieActors.Select(ma => new MovieActorListDTO
+                        .MovieActors.Select(ma => new MovieActorList
                         {
                             MovieId = ma.MovieId,
                             MovieTitle = ma.Movie.MovieTitle,
@@ -50,14 +51,6 @@ namespace CinemaAPI.Controllers
 
             return Ok(actorDTOs);
         }
-
-        //[HttpGet]
-        //public async Task<ActionResult<List<Actor>>> onGetAsync()
-        //{
-        //    var actors = await appDbContext.Actors.ToListAsync();
-
-        //    return Ok(actors);
-        //}
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ActorDTO>> onGetAsync(int id)
@@ -81,7 +74,7 @@ namespace CinemaAPI.Controllers
                 ActorCountry = actor.ActorCountry,
                 ActorHeight = actor.ActorHeight,
                 Movies = actor
-                    .MovieActors.Select(ma => new MovieActorListDTO
+                    .MovieActors.Select(ma => new MovieActorList
                     {
                         MovieId = ma.MovieId,
                         MovieTitle = ma.Movie.MovieTitle,
@@ -93,12 +86,27 @@ namespace CinemaAPI.Controllers
             return Ok(actorDTO);
         }
 
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpPost]
-        public async Task<ActionResult<Actor>> onPostAsync([FromBody] Actor actor)
+        public async Task<ActionResult<ActorPostDTO>> onPostAsync([FromBody] ActorPostDTO actorDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var actor = new Actor
+            {
+                ActorFullName = actorDTO.ActorFullName,
+                ActorPhoto = actorDTO.ActorPhoto,
+                ActorBirthday = actorDTO.ActorBirthday,
+                ActorCountry = actorDTO.ActorCountry,
+                ActorHeight = actorDTO.ActorHeight
+            };
+
             appDbContext.Actors.Add(actor);
             await appDbContext.SaveChangesAsync();
+
             var createdActor = await appDbContext.Actors.FindAsync(actor.ActorId);
 
             if (createdActor != null)
@@ -128,7 +136,6 @@ namespace CinemaAPI.Controllers
                     return NotFound();
                 }
 
-                // Update the existing actor entity with the values from the incoming entity
                 if (actor.ActorFullName != null)
                 {
                     existingActor.ActorFullName = actor.ActorFullName;
@@ -159,11 +166,14 @@ namespace CinemaAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Actor>> onDeleteAsync(int id)
         {
-            var actor = await appDbContext.Actors.FindAsync(id);
+            var actor = await appDbContext
+                .Actors.Include(a => a.MovieActors)
+                .FirstOrDefaultAsync(a => a.ActorId == id);
+
             if (actor == null)
             {
                 return NotFound();

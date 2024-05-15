@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using CinemaAPI.Data;
+using CinemaAPI.DTOs;
 using CinemaAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,16 +20,32 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Genre>>> onGetAsync()
+        public async Task<ActionResult<List<GenreDTO>>> onGetAsync()
         {
             var genres = await appDbContext.Genres.ToListAsync();
-            return Ok(genres);
+
+            var genreDTOs = genres
+                .Select(genre => new GenreDTO
+                {
+                    GenreId = genre.GenreId,
+                    GenreName = genre.GenreName
+                })
+                .ToList();
+
+            return Ok(genreDTOs);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Genre>> onGetGenreAsync(int id)
+        public async Task<ActionResult<GenreDTO>> onGetGenreAsync(int id)
         {
-            var genre = await appDbContext.Genres.FindAsync(id);
+            var genre = await appDbContext
+                .Genres.Select(genre => new GenreDTO
+                {
+                    GenreId = genre.GenreId,
+                    GenreName = genre.GenreName
+                })
+                .FirstOrDefaultAsync(genre => genre.GenreId == id);
+
             if (genre == null)
             {
                 return NotFound();
@@ -37,19 +54,34 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Genre>> onPostAsync([FromBody] Genre genre)
+        public async Task<ActionResult<GenrePostDTO>> onPostAsync(
+            [FromBody] GenrePostDTO genrePostDTO
+        )
         {
-            appDbContext.Genres.Add(genre);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var newGenre = new Genre { GenreName = genrePostDTO.GenreName };
+
+            appDbContext.Genres.Add(newGenre);
             await appDbContext.SaveChangesAsync();
-            var createdGenre = await appDbContext.Genres.FindAsync(genre.GenreId);
+
+            var createdGenre = await appDbContext.Genres.FindAsync(newGenre.GenreId);
 
             if (createdGenre != null)
             {
+                //return CreatedAtAction(
+                //    nameof(onPostAsync),
+                //    new { id = createdGenre.GenreId },
+                //    createdGenre
+                //);
                 return StatusCode(201, createdGenre);
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Error creating genre.");
             }
         }
 
@@ -64,7 +96,6 @@ namespace CinemaAPI.Controllers
                     return NotFound();
                 }
 
-                // Update the existing genre entity with the values from the incoming entity
                 if (genre.GenreName != null)
                 {
                     existingGenre.GenreName = genre.GenreName;
@@ -75,7 +106,6 @@ namespace CinemaAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Handle concurrency conflict
                 return Conflict("The genre has been modified or deleted by another process.");
             }
         }
@@ -83,7 +113,10 @@ namespace CinemaAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Genre>> onDeleteAsync(int id)
         {
-            var genre = await appDbContext.Genres.FindAsync(id);
+            var genre = await appDbContext
+                .Genres.Include(a => a.MovieGenres)
+                .FirstOrDefaultAsync(a => a.GenreId == id);
+
             if (genre == null)
             {
                 return NotFound();

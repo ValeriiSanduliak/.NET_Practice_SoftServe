@@ -58,7 +58,8 @@ public class MovieInfoDTO
 
     public string Limitations { get; set; } = null!;
     public virtual ICollection<MovieActorDTO> Actors { get; set; } = new List<MovieActorDTO>();
-    public virtual ICollection<DirectorDTO> Directors { get; set; } = new List<DirectorDTO>();
+    public virtual ICollection<DirectorMovieDTO> Directors { get; set; } =
+        new List<DirectorMovieDTO>();
     public virtual MediaGetDTO Media { get; set; } = null!;
     public virtual ICollection<GenreDTO> Genres { get; set; } = new List<GenreDTO>();
     public virtual ICollection<ScreenwriterDTO> Screenwriters { get; set; } =
