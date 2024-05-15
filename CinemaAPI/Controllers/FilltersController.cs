@@ -1,4 +1,5 @@
 ﻿using CinemaAPI.Data;
+using CinemaAPI.DTOs;
 using CinemaAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,30 +24,31 @@ namespace CinemaAPI.Controllers
         {
             var endDate = new DateOnly(date.Year, date.Month, date.Day);
 
-            var sessionsList = await (from session in appDbContext.MovieSessions
-                                      join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
-                                      join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                      where movie.EndOfShow >= endDate
-                                      select new
-                                      {
-                                          MovieSessionId = session.MovieSessionId,
-                                          MovieTitle = movie.MovieTitle,
-                                          HallName = hall.HallName,
-                                          HallType = hall.HallType,
-                                          Duration = movie.Duration,
-                                          Limitations = movie.Limitations,
-                                          Rating = movie.Rating,
-                                          StartTime = session.StartTime,
-                                          TheLowestPrice = session.TheLowestPrice,
-                                          MiddlePrice = session.MiddlePrice,
-                                          TheHighestPrice = session.TheHighestPrice
-                                      }
-                ).ToListAsync();
+            var sessionList = await appDbContext
+                .MovieSessions
+                .Include(ms => ms.Movie)
+                .Include(h => h.Hall)
+                .Where(ms => ms.Movie.EndOfShow >= endDate)
+                .Select(session => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = session.MovieSessionId,
+                    MovieTitle = session.Movie.MovieTitle,
+                    HallName = session.Hall.HallName,
+                    HallType = session.Hall.HallType,
+                    Duration = session.Movie.Duration,
+                    Limitations = session.Movie.Limitations,
+                    Rating = session.Movie.Rating,
+                    StartTime = session.StartTime,
+                    TheLowestPrice = session.TheLowestPrice,
+                    MiddlePrice = session.MiddlePrice,
+                    TheHighestPrice = session.TheHighestPrice
+                })
+                .ToListAsync();
 
-            if (sessionsList is null)
+            if (sessionList == null || !sessionList.Any())
                 return NotFound("Nothing today(");
 
-            return Ok(sessionsList);
+            return Ok(sessionList);
         }
 
         [HttpGet("bytime/{hour}")]
@@ -59,59 +61,58 @@ namespace CinemaAPI.Controllers
 
             TimeOnly endSelectedTime = selectedTime.AddHours(1);
 
-            var sessionsList = await (from session in appDbContext.MovieSessions
-                                      join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
-                                      join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                      where session.StartTime >= selectedTime && session.StartTime <= endSelectedTime
-                                      orderby session.StartTime
-                                      select new
-                                      {
-                                          MovieSessionId = session.MovieSessionId,
-                                          MovieTitle = movie.MovieTitle,
-                                          HallName = hall.HallName,
-                                          HallType = hall.HallType,
-                                          Duration = movie.Duration,
-                                          Limitations = movie.Limitations,
-                                          Rating = movie.Rating,
-                                          StartTime = session.StartTime,
-                                          TheLowestPrice = session.TheLowestPrice,
-                                          MiddlePrice = session.MiddlePrice,
-                                          TheHighestPrice = session.TheHighestPrice
-                                      }
-                ).ToListAsync();
+            var sessionList = await appDbContext
+                .MovieSessions
+                .Include(ms => ms.Movie)
+                .Include(h => h.Hall)
+                .Where(session => session.StartTime >= selectedTime && session.StartTime <= endSelectedTime)
+                .OrderBy(session => session.StartTime)
+                .Select(session => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = session.MovieSessionId,
+                    MovieTitle = session.Movie.MovieTitle,
+                    HallName = session.Hall.HallName,
+                    HallType = session.Hall.HallType,
+                    Duration = session.Movie.Duration,
+                    Limitations = session.Movie.Limitations,
+                    Rating = session.Movie.Rating,
+                    StartTime = session.StartTime,
+                    TheLowestPrice = session.TheLowestPrice,
+                    MiddlePrice = session.MiddlePrice,
+                    TheHighestPrice = session.TheHighestPrice
+                })
+                .ToListAsync();
 
-            if (sessionsList == null || sessionsList.Count == 0)
-            {
-                return NotFound("No movie sessions found for the specified hour.");
-            }
+            if (sessionList == null || !sessionList.Any())
+                return NotFound("Nothing today(");
 
-            return Ok(sessionsList);
+            return Ok(sessionList);
         }
 
         [HttpGet("bygenre/{genres}")]
         public async Task<ActionResult<List<MovieSession>>> GetMovieSessionsByGenreAsync(string genres)
         {
-            var sessionsList = await (from movie_genre in appDbContext.MovieGenres
-                                      join movie in appDbContext.Movies on movie_genre.MovieId equals movie.MovieId
-                                      join genre in appDbContext.Genres on movie_genre.GenreId equals genre.GenreId
-                                      join movie_session in appDbContext.MovieSessions on movie.MovieId equals movie_session.MovieId
-                                      join hall in appDbContext.Halls on movie_session.HallId equals hall.HallId
-                                      where genre.GenreName == genres
-                                      select new
-                                      {
-                                          MovieSessionId = movie_session.MovieSessionId,
-                                          MovieTitle = movie.MovieTitle,
-                                          HallName = hall.HallName,
-                                          HallType = hall.HallType,
-                                          Duration = movie.Duration,
-                                          Limitations = movie.Limitations,
-                                          Rating = movie.Rating,
-                                          StartTime = movie_session.StartTime,
-                                          TheLowestPrice = movie_session.TheLowestPrice,
-                                          MiddlePrice = movie_session.MiddlePrice,
-                                          TheHighestPrice = movie_session.TheHighestPrice
-                                      }
-                ).ToListAsync();
+            var sessionsList = await appDbContext.MovieSessions
+                .Include(ms => ms.Movie)
+                    .ThenInclude(m => m.MovieGenres)
+                        .ThenInclude(mg => mg.Genre)
+                .Include(ms => ms.Hall)
+                .Where(ms => ms.Movie.MovieGenres.Any(mg => mg.Genre.GenreName == genres))
+                .Select(ms => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = ms.MovieSessionId,
+                    MovieTitle = ms.Movie.MovieTitle,
+                    HallName = ms.Hall.HallName,
+                    HallType = ms.Hall.HallType,
+                    Duration = ms.Movie.Duration,
+                    Limitations = ms.Movie.Limitations,
+                    Rating = ms.Movie.Rating,
+                    StartTime = ms.StartTime,
+                    TheLowestPrice = ms.TheLowestPrice,
+                    MiddlePrice = ms.MiddlePrice,
+                    TheHighestPrice = ms.TheHighestPrice
+                })
+                .ToListAsync();
 
             if (sessionsList == null || sessionsList.Count == 0)
             {
@@ -121,35 +122,36 @@ namespace CinemaAPI.Controllers
             return Ok(sessionsList);
         }
 
+
+
         [HttpGet("byhall/{halltype}")]
         public async Task<ActionResult<List<MovieSession>>> GetMovieSessionsByHallAsync(string halltype)
         {
-            var sessionsList = await (from session in appDbContext.MovieSessions
-                                      join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
-                                      join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                      where hall.HallType == halltype
-                                      select new
-                                      {
-                                          MovieSessionId = session.MovieSessionId,
-                                          MovieTitle = movie.MovieTitle,
-                                          HallName = hall.HallName,
-                                          HallType = hall.HallType,
-                                          Duration = movie.Duration,
-                                          Limitations = movie.Limitations,
-                                          Rating = movie.Rating,
-                                          StartTime = session.StartTime,
-                                          TheLowestPrice = session.TheLowestPrice,
-                                          MiddlePrice = session.MiddlePrice,
-                                          TheHighestPrice = session.TheHighestPrice
-                                      }
-                ).ToListAsync();
+            var sessionList = await appDbContext
+                .MovieSessions
+                .Include(ms => ms.Movie)
+                .Include(h => h.Hall)
+                .Where(h => h.Hall.HallType == halltype)
+                .Select(session => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = session.MovieSessionId,
+                    MovieTitle = session.Movie.MovieTitle,
+                    HallName = session.Hall.HallName,
+                    HallType = session.Hall.HallType,
+                    Duration = session.Movie.Duration,
+                    Limitations = session.Movie.Limitations,
+                    Rating = session.Movie.Rating,
+                    StartTime = session.StartTime,
+                    TheLowestPrice = session.TheLowestPrice,
+                    MiddlePrice = session.MiddlePrice,
+                    TheHighestPrice = session.TheHighestPrice
+                })
+                .ToListAsync();
 
-            if (sessionsList == null || sessionsList.Count == 0)
-            {
+            if (sessionList == null || !sessionList.Any())
                 return NotFound("We do not have such a hall. We only have 2D or 3D");
-            }
 
-            return Ok(sessionsList);
+            return Ok(sessionList);
         }
 
         [HttpGet("byrating/{rating}")]
@@ -160,26 +162,28 @@ namespace CinemaAPI.Controllers
                 return BadRequest("Invalid rating value. Rating should be a numeric value.");
             }
 
-            var sessionsList = await (from session in appDbContext.MovieSessions
-                                      join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
-                                      join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                      select new
-                                      {
-                                          MovieSessionId = session.MovieSessionId,
-                                          MovieTitle = movie.MovieTitle,
-                                          HallName = hall.HallName,
-                                          HallType = hall.HallType,
-                                          Duration = movie.Duration,
-                                          Limitations = movie.Limitations,
-                                          Rating = movie.Rating,
-                                          StartTime = session.StartTime,
-                                          TheLowestPrice = session.TheLowestPrice,
-                                          MiddlePrice = session.MiddlePrice,
-                                          TheHighestPrice = session.TheHighestPrice
-                                      }
-                ).ToListAsync();
+            var sessionList = await appDbContext
+                .MovieSessions
+                .Include(ms => ms.Movie)
+                .Include(h => h.Hall)
+                .Select(session => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = session.MovieSessionId,
+                    MovieTitle = session.Movie.MovieTitle,
+                    HallName = session.Hall.HallName,
+                    HallType = session.Hall.HallType,
+                    Duration = session.Movie.Duration,
+                    Limitations = session.Movie.Limitations,
+                    Rating = session.Movie.Rating,
+                    StartTime = session.StartTime,
+                    TheLowestPrice = session.TheLowestPrice,
+                    MiddlePrice = session.MiddlePrice,
+                    TheHighestPrice = session.TheHighestPrice
+                })
+                .ToListAsync();
 
-            var filteredSessionsList = sessionsList
+
+            var filteredSessionsList = sessionList
                 .Where(s => {
                     var ratingPart = s.Rating.Split('/')[0];
                     return double.TryParse(ratingPart, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, 
