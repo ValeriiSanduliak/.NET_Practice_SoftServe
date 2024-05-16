@@ -19,6 +19,138 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
+        [HttpGet("PlacesAndSessions")]
+        public async Task<ActionResult<List<Reservation>>> onGetAsync()
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            var reservations = await appDbContext
+                .Prices.Include(m => m.Movie)
+                .ThenInclude(ms => ms.MovieSessions)
+                .Include(s => s.SeatReservation)
+                .ThenInclude(h => h.Hall)
+                .Where(p => !p.SeatReservation.IsReserved && p.Movie.EndOfShow >= currentDate)
+                .GroupBy(p => new
+                {
+                    p.Movie.MovieSessions.FirstOrDefault().MovieSessionId,
+                    p.Movie.MovieTitle
+                })
+                .Select(group => new
+                {
+                    MovieSessionId = group.Key.MovieSessionId,
+                    MovieTitle = group.Key.MovieTitle,
+                    StartTime = group
+                        .FirstOrDefault()
+                        .Movie.MovieSessions.FirstOrDefault()
+                        .StartTime,
+                    Seats = group
+                        .Select(p => p.SeatReservation.RowNumber)
+                        .Distinct()
+                        .Select(rowNumber => new
+                        {
+                            RowNumber = rowNumber,
+                            SeatNumbers = group
+                                .Where(p => p.SeatReservation.RowNumber == rowNumber)
+                                .Select(p => p.SeatReservation.SeatNumber)
+                                .OrderBy(sn => sn)
+                                .ToList()
+                        })
+                })
+                .ToListAsync();
+
+            return Ok(reservations);
+        }
+
+        [HttpGet("PlacesAndSessions{id}")]
+        public async Task<ActionResult<List<Reservation>>> onGetAsync(int id)
+        {
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            var reservations = await appDbContext
+                .Prices.Include(m => m.Movie)
+                .ThenInclude(ms => ms.MovieSessions)
+                .Include(s => s.SeatReservation)
+                .ThenInclude(h => h.Hall)
+                .Where(p =>
+                    !p.SeatReservation.IsReserved
+                    && p.Movie.EndOfShow >= currentDate
+                    && p.Movie.MovieSessions.Any(ms => ms.MovieSessionId == id)
+                )
+                .GroupBy(p => new
+                {
+                    p.Movie.MovieSessions.FirstOrDefault().MovieSessionId,
+                    p.Movie.MovieTitle
+                })
+                .Select(group => new
+                {
+                    MovieSessionId = group.Key.MovieSessionId,
+                    MovieTitle = group.Key.MovieTitle,
+                    StartTime = group
+                        .FirstOrDefault()
+                        .Movie.MovieSessions.FirstOrDefault()
+                        .StartTime,
+                    Seats = group
+                        .Select(p => p.SeatReservation.RowNumber)
+                        .Distinct()
+                        .Select(rowNumber => new
+                        {
+                            RowNumber = rowNumber,
+                            SeatNumbers = group
+                                .Where(p => p.SeatReservation.RowNumber == rowNumber)
+                                .Select(p => p.SeatReservation.SeatNumber)
+                                .OrderBy(sn => sn)
+                                .ToList()
+                        })
+                })
+                .ToListAsync();
+
+            if (reservations.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(reservations);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<Reservation>>> onGetReservationsAsync()
+        {
+            var reservations = await appDbContext
+                .Reservations.Select(item => new
+                {
+                    UserId = item.UserId,
+                    MovieSessionId = item.MovieSessionId,
+                    PriceId = item.PriceId
+                })
+                .ToListAsync();
+
+            if (reservations.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(reservations);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<List<Reservation>>> onGetReservatiByIdonsAsync(int id)
+        {
+            var reservations = await appDbContext
+                .Reservations.Where(r => r.ReservationId == id)
+                .Select(item => new
+                {
+                    UserId = item.UserId,
+                    MovieSessionId = item.MovieSessionId,
+                    PriceId = item.PriceId
+                })
+                .ToListAsync();
+
+            if (reservations.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(reservations);
+        }
+
         [HttpPost]
         public async Task<ActionResult<Reservation>> onPostAsync(
             int movieSessionId,
@@ -30,13 +162,27 @@ namespace CinemaAPI.Controllers
 
             string token = Request.Headers["Authorization"];
 
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Authorization token is not specified.");
+            }
+
             if (token.StartsWith("Bearer"))
             {
                 token = token.Substring("Bearer ".Length).Trim();
             }
+
             var handler = new JwtSecurityTokenHandler();
 
-            JwtSecurityToken jwt = handler.ReadJwtToken(token);
+            JwtSecurityToken jwt = null;
+            try
+            {
+                jwt = handler.ReadJwtToken(token);
+            }
+            catch (Exception)
+            {
+                return Unauthorized("Incorrect or damaged token.");
+            }
 
             string email =
                 jwt.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value ?? string.Empty;
@@ -50,10 +196,20 @@ namespace CinemaAPI.Controllers
                 return NotFound("User not found");
             }
 
-            var moviesession = await appDbContext.MovieSessions.FindAsync(movieSessionId);
-            if (moviesession == null)
+            var movieSession = await appDbContext
+                .MovieSessions.Include(ms => ms.Movie)
+                .FirstOrDefaultAsync(ms => ms.MovieSessionId == movieSessionId);
+
+            if (movieSession == null)
             {
                 return NotFound("There is no such movieSession");
+            }
+
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            if (movieSession.Movie.EndOfShow < currentDate)
+            {
+                return BadRequest("This movie session has already ended.");
             }
 
             var hall = await appDbContext.Halls.FirstOrDefaultAsync();
@@ -63,12 +219,12 @@ namespace CinemaAPI.Controllers
                 return NotFound("There is no such hall");
             }
 
-            if (rowNumber > hall.NumberOfRows)
+            if (rowNumber > hall.NumberOfRows || rowNumber < 1)
             {
                 return NotFound("There is no such row");
             }
 
-            if (seatNumber > hall.NumberOfSeats)
+            if (seatNumber > hall.NumberOfSeats || seatNumber < 1)
             {
                 return NotFound("There is no such seat");
             }
@@ -126,6 +282,94 @@ namespace CinemaAPI.Controllers
             };
 
             appDbContext.Reservations.Add(reservation);
+            await appDbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<Reservation>> onPatchAsync(
+            int id,
+            [FromBody] ReservationDTO reservation
+        )
+        {
+            var reservationToUpdate = await appDbContext.Reservations.FindAsync(id);
+
+            if (reservationToUpdate == null)
+            {
+                return NotFound();
+            }
+
+            var user = await appDbContext.Users.FindAsync(reservation.UserId);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var movieSession = await appDbContext.MovieSessions.FirstOrDefaultAsync(ms =>
+                ms.MovieSessionId == reservation.MovieSessionId
+            );
+
+            var movieSessionCheck = await appDbContext
+                .MovieSessions.Include(m => m.Movie)
+                .ThenInclude(p => p.Prices)
+                .Where(m =>
+                    m.MovieId == movieSession.MovieId
+                    && m.Movie.Prices.Any(p => p.PriceId == reservation.PriceId)
+                )
+                .ToListAsync();
+
+            if (movieSessionCheck.Count == 0)
+            {
+                return NotFound("There is no such movieSession in this priceId");
+            }
+
+            if (movieSession == null)
+            {
+                return NotFound("There is no such movieSession");
+            }
+
+            var existingReservationWithSamePriceId =
+                await appDbContext.Reservations.FirstOrDefaultAsync(r =>
+                    r.PriceId == reservation.PriceId && r.ReservationId != id
+                );
+
+            if (existingReservationWithSamePriceId != null)
+            {
+                return BadRequest("PriceId is already used in another reservation.");
+            }
+
+            reservationToUpdate.UserId = reservation.UserId;
+            reservationToUpdate.MovieSessionId = reservation.MovieSessionId;
+            reservationToUpdate.PriceId = reservation.PriceId;
+
+            await appDbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Reservation>> onDeleteAsync(int id)
+        {
+            var reservation = await appDbContext.Reservations.FindAsync(id);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            var price = await appDbContext
+                .Prices.Include(p => p.SeatReservation)
+                .FirstOrDefaultAsync(p => p.PriceId == reservation.PriceId);
+
+            if (price != null)
+            {
+                price.SeatReservation.IsReserved = false;
+                await appDbContext.SaveChangesAsync();
+            }
+
+            appDbContext.Reservations.Remove(reservation);
             await appDbContext.SaveChangesAsync();
 
             return Ok();
