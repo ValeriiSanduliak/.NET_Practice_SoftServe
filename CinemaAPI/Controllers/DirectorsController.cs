@@ -39,7 +39,7 @@ namespace CinemaAPI.Controllers
                     DirectorId = director.DirectorId,
                     DirectorFullName = director.DirectorFullName,
                     Movies = director
-                        .MovieDirectors.Select(md => new MovieDirectorList
+                        .MovieDirectors.Select(md => new EntityWithMovieList
                         {
                             MovieId = md.MovieId,
                             MovieTitle = md.Movie.MovieTitle
@@ -65,12 +65,17 @@ namespace CinemaAPI.Controllers
                 .ThenInclude(md => md.Movie)
                 .FirstOrDefaultAsync(d => d.DirectorId == id);
 
+            if (director == null)
+            {
+                return NotFound();
+            }
+
             var directorDTO = new DirectorDTO
             {
                 DirectorId = director.DirectorId,
                 DirectorFullName = director.DirectorFullName,
                 Movies = director
-                    .MovieDirectors.Select(md => new MovieDirectorList
+                    .MovieDirectors.Select(md => new EntityWithMovieList
                     {
                         MovieId = md.MovieId,
                         MovieTitle = md.Movie.MovieTitle
@@ -109,20 +114,27 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Director>> OnPatchAsync(int id, [FromBody] Director director)
+        public async Task<ActionResult<DirectorPostDTO>> OnPatchAsync(
+            int id,
+            [FromBody] DirectorPostDTO directorPatchDTO
+        )
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var existingDirector = await appDbContext.Directors.FindAsync(id);
                 if (existingDirector == null)
                 {
                     return NotFound();
                 }
 
-                // Update the existing Director entity with the values from the incoming entity
-                if (director.DirectorFullName != null)
+                if (directorPatchDTO.DirectorFullName != null)
                 {
-                    existingDirector.DirectorFullName = director.DirectorFullName;
+                    existingDirector.DirectorFullName = directorPatchDTO.DirectorFullName;
                 }
 
                 await appDbContext.SaveChangesAsync();
@@ -130,7 +142,6 @@ namespace CinemaAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Handle concurrency conflict
                 return Conflict("The Director has been modified or deleted by another process.");
             }
         }

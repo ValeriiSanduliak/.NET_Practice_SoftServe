@@ -26,4 +26,15 @@ namespace CinemaAPI.DTOs
         [Range(0, int.MaxValue, ErrorMessage = "ActorHeight must be a positive number")]
         public int? ActorHeight { get; set; }
     }
+
+    public class ActorPatchDTO
+    {
+        public string? ActorFullName { get; set; }
+        public string? ActorPhoto { get; set; }
+        public DateOnly? ActorBirthday { get; set; }
+        public string? ActorCountry { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "ActorHeight must be a positive number")]
+        public int? ActorHeight { get; set; }
+    }
 }

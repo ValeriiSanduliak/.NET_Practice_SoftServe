@@ -86,19 +86,27 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Genre>> OnPatchAsync(int id, [FromBody] Genre genre)
+        public async Task<ActionResult<GenrePostDTO>> OnPatchAsync(
+            int id,
+            [FromBody] GenrePostDTO genrePatchDTO
+        )
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var existingGenre = await appDbContext.Genres.FindAsync(id);
                 if (existingGenre == null)
                 {
                     return NotFound();
                 }
 
-                if (genre.GenreName != null)
+                if (genrePatchDTO.GenreName != null)
                 {
-                    existingGenre.GenreName = genre.GenreName;
+                    existingGenre.GenreName = genrePatchDTO.GenreName;
                 }
 
                 await appDbContext.SaveChangesAsync();
@@ -106,7 +114,9 @@ namespace CinemaAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                return Conflict("The genre has been modified or deleted by another process.");
+                return Conflict(
+                    "The genrePatchDTO has been modified or deleted by another process."
+                );
             }
         }
 

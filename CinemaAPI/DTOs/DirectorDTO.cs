@@ -8,7 +8,7 @@ namespace CinemaAPI.DTOs
 
         public string DirectorFullName { get; set; } = null!;
 
-        public List<MovieDirectorList> Movies { get; set; } = new List<MovieDirectorList>();
+        public List<EntityWithMovieList> Movies { get; set; } = new List<EntityWithMovieList>();
     }
 
     public class DirectorPostDTO

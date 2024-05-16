@@ -9,7 +9,7 @@
         public string RoleName { get; set; }
     }
 
-    public class MovieDirectorList
+    public class EntityWithMovieList
     {
         public int MovieId { get; set; }
 

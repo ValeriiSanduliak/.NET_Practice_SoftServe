@@ -124,9 +124,12 @@ namespace CinemaAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Actor>> OnPatchAsync(int id, [FromBody] Actor actor)
+        public async Task<ActionResult<ActorPatchDTO>> OnPatchAsync(
+            int id,
+            [FromBody] ActorPatchDTO actorPatchDTO
+        )
         {
             try
             {
@@ -136,24 +139,24 @@ namespace CinemaAPI.Controllers
                     return NotFound();
                 }
 
-                if (actor.ActorFullName != null)
+                if (actorPatchDTO.ActorFullName != null)
                 {
-                    existingActor.ActorFullName = actor.ActorFullName;
+                    existingActor.ActorFullName = actorPatchDTO.ActorFullName;
                 }
 
-                if (actor.ActorBirthday != null)
+                if (actorPatchDTO.ActorBirthday != null)
                 {
-                    existingActor.ActorBirthday = actor.ActorBirthday;
+                    existingActor.ActorBirthday = actorPatchDTO.ActorBirthday;
                 }
 
-                if (actor.ActorCountry != null)
+                if (actorPatchDTO.ActorCountry != null)
                 {
-                    existingActor.ActorCountry = actor.ActorCountry;
+                    existingActor.ActorCountry = actorPatchDTO.ActorCountry;
                 }
 
-                if (actor.ActorHeight != null)
+                if (actorPatchDTO.ActorHeight != null)
                 {
-                    existingActor.ActorHeight = actor.ActorHeight;
+                    existingActor.ActorHeight = actorPatchDTO.ActorHeight;
                 }
 
                 await appDbContext.SaveChangesAsync();
