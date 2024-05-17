@@ -14,8 +14,8 @@ namespace CinemaAPI.DTOs
 
         public int NumberOfSeats { get; set; }
 
-        public virtual ICollection<MovieSessionDTO> MovieSessions { get; set; } =
-            new List<MovieSessionDTO>();
+        public virtual ICollection<HallMovieSessionDTO> MovieSessions { get; set; } =
+            new List<HallMovieSessionDTO>();
     }
 
     public class HallPostDTO

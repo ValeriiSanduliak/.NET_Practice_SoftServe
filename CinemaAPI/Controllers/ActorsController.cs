@@ -29,6 +29,11 @@ namespace CinemaAPI.Controllers
                 .ThenInclude(ma => ma.Movie)
                 .ToListAsync();
 
+            if (actors == null)
+            {
+                return NoContent();
+            }
+
             var actorDTOs = actors
                 .Select(actor => new ActorDTO
                 {

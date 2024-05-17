@@ -24,6 +24,11 @@ namespace CinemaAPI.Controllers
         {
             var genres = await appDbContext.Genres.ToListAsync();
 
+            if (genres == null)
+            {
+                return NoContent();
+            }
+
             var genreDTOs = genres
                 .Select(genre => new GenreDTO
                 {

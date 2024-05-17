@@ -30,6 +30,11 @@ namespace CinemaAPI.Controllers
                 .ThenInclude(ms => ms.Movie)
                 .ToListAsync();
 
+            if (halls == null)
+            {
+                return NoContent();
+            }
+
             var hallDTOs = halls
                 .Select(h => new HallDTO
                 {
@@ -39,7 +44,7 @@ namespace CinemaAPI.Controllers
                     NumberOfRows = h.NumberOfRows,
                     NumberOfSeats = h.NumberOfSeats,
                     MovieSessions = h
-                        .MovieSessions.Select(ms => new MovieSessionDTO
+                        .MovieSessions.Select(ms => new HallMovieSessionDTO
                         {
                             MovieSessionId = ms.MovieSessionId,
                             MovieTitle = ms.Movie.MovieTitle,
@@ -73,7 +78,7 @@ namespace CinemaAPI.Controllers
                 NumberOfRows = hall.NumberOfRows,
                 NumberOfSeats = hall.NumberOfSeats,
                 MovieSessions = hall
-                    .MovieSessions.Select(ms => new MovieSessionDTO
+                    .MovieSessions.Select(ms => new HallMovieSessionDTO
                     {
                         MovieSessionId = ms.MovieSessionId,
                         MovieTitle = ms.Movie.MovieTitle,
