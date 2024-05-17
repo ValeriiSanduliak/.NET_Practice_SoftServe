@@ -2,6 +2,7 @@
 using CinemaAPI.Data;
 using CinemaAPI.DTOs;
 using CinemaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -116,6 +117,7 @@ namespace CinemaAPI.Controllers
             return Ok(priceDTO);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<PricePostDTO>> onPostAsync(
             [FromBody] PricePostDTO pricePostDTO
@@ -149,6 +151,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<PricePatchDTO>> OnPatchAsync(
             int id,

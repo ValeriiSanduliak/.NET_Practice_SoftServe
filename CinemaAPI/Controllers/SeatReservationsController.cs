@@ -68,6 +68,7 @@ namespace CinemaAPI.Controllers
             return Ok(seatReservationDTO);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<SeatReservationPostDTO>> onPostAsync(
             [FromBody] SeatReservationPostDTO seatReservationPostDTO
@@ -140,6 +141,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<SeatReservation>> OnPatchAsync(
             int id,

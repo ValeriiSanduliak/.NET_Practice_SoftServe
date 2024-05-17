@@ -117,7 +117,7 @@ namespace CinemaAPI.Controllers
             return Ok(movieSessionDTO);
         }
 
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<MovieSessionPostDTO>> onPostAsync(
             [FromBody] MovieSessionPostDTO movieSessionDTO
@@ -154,7 +154,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<MovieSessionPatchDTO>> onPutAsync(
             int id,
@@ -214,7 +214,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<MovieSession>> onDeleteAsync(int id)
         {
