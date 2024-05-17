@@ -19,4 +19,13 @@
 
         public string MovieTrailer { get; set; } = null!;
     }
+
+    public class MediaPatchDTO
+    {
+        public string? MovieDescription { get; set; }
+
+        public string? MoviePhoto { get; set; }
+
+        public string? MovieTrailer { get; set; }
+    }
 }

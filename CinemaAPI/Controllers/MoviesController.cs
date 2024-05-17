@@ -251,7 +251,7 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Movie>> OnPatchAsync(int id, [FromBody] MovieDTO movie)
+        public async Task<ActionResult<Movie>> OnPatchAsync(int id, [FromBody] MoviePatchDTO movie)
         {
             try
             {
@@ -272,183 +272,132 @@ namespace CinemaAPI.Controllers
                     {
                         return BadRequest("The movie title already exists.");
                     }
-                }
-
-                // Update the existing actor entity with the values from the incoming entity
-                if (movie.MovieTitle != null)
-                {
                     existingMovie.MovieTitle = movie.MovieTitle;
                 }
 
-                if (movie.MediaId != null)
+                // Update other fields if provided
+                if (movie.Duration.HasValue)
                 {
-                    existingMovie.MediaId = movie.MediaId;
+                    existingMovie.Duration = movie.Duration.Value;
                 }
-
-                if (movie.Duration != null)
-                {
-                    existingMovie.Duration = movie.Duration;
-                }
-
                 if (movie.Country != null)
                 {
                     existingMovie.Country = movie.Country;
                 }
-                if (movie.WorldPremiere != null)
+                if (movie.WorldPremiere.HasValue)
                 {
-                    existingMovie.WorldPremiere = movie.WorldPremiere;
+                    existingMovie.WorldPremiere = movie.WorldPremiere.Value;
                 }
-                if (movie.UkrainePremiere != null)
+                if (movie.UkrainePremiere.HasValue)
                 {
-                    existingMovie.UkrainePremiere = movie.UkrainePremiere;
+                    existingMovie.UkrainePremiere = movie.UkrainePremiere.Value;
                 }
                 if (movie.Rating != null)
                 {
                     existingMovie.Rating = movie.Rating;
                 }
-                if (movie.EndOfShow != null)
+                if (movie.EndOfShow.HasValue)
                 {
-                    existingMovie.EndOfShow = movie.EndOfShow;
+                    existingMovie.EndOfShow = movie.EndOfShow.Value;
                 }
                 if (movie.Limitations != null)
                 {
                     existingMovie.Limitations = movie.Limitations;
                 }
-
-                // Actors
-                foreach (var actorInfo in movie.Actors)
+                if (movie.MediaId.HasValue)
                 {
-                    var existingMovieActor = await appDbContext.MovieActors.FirstOrDefaultAsync(
-                        ma => ma.MovieId == id && ma.ActorId == actorInfo.ActorId
-                    );
-
-                    if (existingMovieActor != null)
-                    {
-                        // Update actor id
-                        existingMovieActor.ActorId = actorInfo.ActorId;
-                        existingMovieActor.ActorNickname = actorInfo.ActorNickname;
-                        // Save changes to the database
-                        await appDbContext.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        // Add new actor to the movie
-                        var newMovieActor = new MovieActor
-                        {
-                            MovieId = id,
-                            ActorId = actorInfo.ActorId,
-                            ActorNickname = actorInfo.ActorNickname
-                        };
-                        appDbContext.MovieActors.Add(newMovieActor);
-                    }
+                    existingMovie.MediaId = movie.MediaId.Value;
                 }
 
-                // Update movie directors
-                foreach (var directorId in movie.DirectorId)
+                // Update actors, directors, genres, and screenwriters
+                if (movie.Actors != null)
                 {
-                    var existingMovieDirector =
-                        await appDbContext.MovieDirectors.FirstOrDefaultAsync(md =>
-                            md.MovieId == id && md.DirectorId == directorId
+                    // Update or add actors
+                    foreach (var actorInfo in movie.Actors)
+                    {
+                        var existingMovieActor = await appDbContext.MovieActors.FirstOrDefaultAsync(
+                            ma => ma.MovieId == id && ma.ActorId == actorInfo.ActorId
                         );
 
-                    if (existingMovieDirector == null)
-                    {
-                        // Add new director to the movie
-                        var newMovieDirector = new MovieDirector
+                        if (existingMovieActor != null)
                         {
-                            MovieId = id,
-                            DirectorId = directorId
-                        };
-                        appDbContext.MovieDirectors.Add(newMovieDirector);
-                    }
-                    else
-                    {
-                        // Update existing director
-                        existingMovieDirector.MovieId = id;
-                        existingMovieDirector.DirectorId = directorId;
-                    }
-                }
-
-                // Update movie genres
-                foreach (var genreId in movie.GenreId)
-                {
-                    var existingMovieGenre = await appDbContext.MovieGenres.FirstOrDefaultAsync(
-                        mg => mg.MovieId == id && mg.GenreId == genreId
-                    );
-
-                    if (existingMovieGenre == null)
-                    {
-                        // Add new genre to the movie
-                        var newMovieGenre = new MovieGenre { MovieId = id, GenreId = genreId };
-                        appDbContext.MovieGenres.Add(newMovieGenre);
-                    }
-                    else
-                    {
-                        // Update existing genre
-                        existingMovieGenre.MovieId = id;
-                        existingMovieGenre.GenreId = genreId;
+                            existingMovieActor.ActorNickname = actorInfo.ActorNickname;
+                        }
+                        else
+                        {
+                            var newMovieActor = new MovieActor
+                            {
+                                MovieId = id,
+                                ActorId = actorInfo.ActorId,
+                                ActorNickname = actorInfo.ActorNickname
+                            };
+                            appDbContext.MovieActors.Add(newMovieActor);
+                        }
                     }
                 }
 
-                // Update movie screenwriters
-                foreach (var screenwriterId in movie.ScreenwriterId)
+                // Update or add directors
+                if (movie.DirectorId != null)
                 {
-                    var existingMovieScreenwriter =
-                        await appDbContext.MovieScreenwriters.FirstOrDefaultAsync(ms =>
-                            ms.MovieId == id && ms.ScreenwriterId == screenwriterId
+                    foreach (var directorId in movie.DirectorId)
+                    {
+                        var existingMovieDirector =
+                            await appDbContext.MovieDirectors.FirstOrDefaultAsync(md =>
+                                md.MovieId == id && md.DirectorId == directorId
+                            );
+
+                        if (existingMovieDirector == null)
+                        {
+                            var newMovieDirector = new MovieDirector
+                            {
+                                MovieId = id,
+                                DirectorId = directorId
+                            };
+                            appDbContext.MovieDirectors.Add(newMovieDirector);
+                        }
+                    }
+                }
+
+                // Update or add genres
+                if (movie.GenreId != null)
+                {
+                    foreach (var genreId in movie.GenreId)
+                    {
+                        var existingMovieGenre = await appDbContext.MovieGenres.FirstOrDefaultAsync(
+                            mg => mg.MovieId == id && mg.GenreId == genreId
                         );
 
-                    if (existingMovieScreenwriter == null)
-                    {
-                        // Add new screenwriter to the movie
-                        var newMovieScreenwriter = new MovieScreenwriter
+                        if (existingMovieGenre == null)
                         {
-                            MovieId = id,
-                            ScreenwriterId = screenwriterId
-                        };
-                        appDbContext.MovieScreenwriters.Add(newMovieScreenwriter);
+                            var newMovieGenre = new MovieGenre { MovieId = id, GenreId = genreId };
+                            appDbContext.MovieGenres.Add(newMovieGenre);
+                        }
                     }
-                    else
+                }
+
+                // Update or add screenwriters
+                if (movie.ScreenwriterId != null)
+                {
+                    foreach (var screenwriterId in movie.ScreenwriterId)
                     {
-                        // Update existing screenwriter
-                        existingMovieScreenwriter.MovieId = id;
-                        existingMovieScreenwriter.ScreenwriterId = screenwriterId;
+                        var existingMovieScreenwriter =
+                            await appDbContext.MovieScreenwriters.FirstOrDefaultAsync(ms =>
+                                ms.MovieId == id && ms.ScreenwriterId == screenwriterId
+                            );
+
+                        if (existingMovieScreenwriter == null)
+                        {
+                            var newMovieScreenwriter = new MovieScreenwriter
+                            {
+                                MovieId = id,
+                                ScreenwriterId = screenwriterId
+                            };
+                            appDbContext.MovieScreenwriters.Add(newMovieScreenwriter);
+                        }
                     }
                 }
 
                 await appDbContext.SaveChangesAsync();
-
-                var movieFind = await appDbContext.Movies.FindAsync(id);
-
-                if (movieFind == null)
-                {
-                    return NotFound();
-                }
-
-                var movieDTO = new MovieDTO
-                {
-                    MovieTitle = movieFind.MovieTitle,
-                    Duration = movieFind.Duration,
-                    Country = movieFind.Country,
-                    WorldPremiere = movieFind.WorldPremiere,
-                    UkrainePremiere = movieFind.UkrainePremiere,
-                    Rating = movieFind.Rating,
-                    EndOfShow = movieFind.EndOfShow,
-                    Limitations = movieFind.Limitations,
-                    MediaId = movieFind.MediaId,
-                    Actors = movieFind
-                        .MovieActors.Select(ma => new ActorInfo
-                        {
-                            ActorId = ma.ActorId,
-                            ActorNickname = ma.ActorNickname
-                        })
-                        .ToList(),
-                    GenreId = movieFind.MovieGenres.Select(mg => mg.GenreId).ToList(),
-                    DirectorId = movieFind.MovieDirectors.Select(md => md.DirectorId).ToList(),
-                    ScreenwriterId = movieFind
-                        .MovieScreenwriters.Select(ms => ms.ScreenwriterId)
-                        .ToList()
-                };
 
                 return StatusCode(200);
             }
