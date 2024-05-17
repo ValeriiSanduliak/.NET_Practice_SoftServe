@@ -1,4 +1,5 @@
 ﻿using CinemaAPI.Data;
+using CinemaAPI.DTOs;
 using CinemaAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,27 +23,31 @@ namespace CinemaAPI.Controllers
         {
             var endDate = new DateOnly(2024, 6, 20);
 
-            var sessionsList = await (from session in appDbContext.MovieSessions
-                                join movie in appDbContext.Movies on session.MovieId equals movie.MovieId
-                                join hall in appDbContext.Halls on session.HallId equals hall.HallId
-                                where movie.EndOfShow >= endDate
-                                select new 
-                                {
-                                    MovieSessionId = session.MovieSessionId,
-                                    MovieTitle = movie.MovieTitle,
-                                    HallName = hall.HallName,
-                                    HallType = hall.HallType,
-                                    Duration = movie.Duration,
-                                    Limitations = movie.Limitations,
-                                    Rating = movie.Rating,
-                                    StartTime = session.StartTime,
-                                    TheLowestPrice = session.TheLowestPrice,
-                                    MiddlePrice = session.MiddlePrice,
-                                    TheHighestPrice = session.TheHighestPrice
-                                }        
-                ).ToListAsync();
+            var sessionList = await appDbContext
+                .MovieSessions
+                .Include(ms => ms.Movie)
+                .Include(h => h.Hall)
+                .Where(ms => ms.Movie.EndOfShow >= endDate)
+                .Select(sessionList => new MovieSessionGetNewDTO
+                {
+                    MovieSessionId = sessionList.MovieSessionId,
+                    MovieTitle = sessionList.Movie.MovieTitle,
+                    HallName = sessionList.Hall.HallName,
+                    HallType = sessionList.Hall.HallType,
+                    Duration = sessionList.Movie.Duration,
+                    Limitations = sessionList.Movie.Limitations,
+                    Rating = sessionList.Movie.Rating,
+                    StartTime = sessionList.StartTime,
+                    TheLowestPrice = sessionList.TheLowestPrice,
+                    MiddlePrice = sessionList.MiddlePrice,
+                    TheHighestPrice = sessionList.TheHighestPrice
+                })
+                .ToListAsync();
 
-            return Ok(sessionsList);
+            if (sessionList == null || !sessionList.Any())
+                return NotFound("Nothing today(");
+
+            return Ok(sessionList);
         }
     }
 }

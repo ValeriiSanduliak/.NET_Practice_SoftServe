@@ -7,7 +7,8 @@
         public string MovieTitle { get; set; }
 
         public string RoleName { get; set; }
-      
+    }
+
     public class MovieActorDTO
     {
         public int ActorId { get; set; }
