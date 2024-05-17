@@ -23,7 +23,6 @@ namespace CinemaAPI.Controllers
             _authService = authService;
         }
 
-        // POST: auth/login
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginUser user)
         {
@@ -132,36 +131,6 @@ namespace CinemaAPI.Controllers
             }
 
             return BadRequest(new { message = "User registration unsuccessful" });
-        }
-
-        [Authorize(Roles = "user, admin")]
-        [HttpGet]
-        public IActionResult Test()
-        {
-            // Get token from header
-
-            string token = Request.Headers["Authorization"];
-
-            if (token.StartsWith("Bearer"))
-            {
-                token = token.Substring("Bearer ".Length).Trim();
-            }
-            var handler = new JwtSecurityTokenHandler();
-
-            // Returns all claims present in the token
-
-            JwtSecurityToken jwt = handler.ReadJwtToken(token);
-
-            var claims = "List of Claims: \n\n";
-
-            foreach (var claim in jwt.Claims)
-            {
-                claims += $"{claim.Type}: {claim.Value}\n";
-
-                Console.WriteLine(claims);
-            }
-
-            return Ok(claims);
         }
     }
 }

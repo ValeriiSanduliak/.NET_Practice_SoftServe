@@ -54,12 +54,6 @@ namespace CinemaAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Screenwriter>> onGetScreenwriterAsync(int id)
         {
-            //var screenwriter = await appDbContext.Screenwriters.FindAsync(id);
-            //if (screenwriter == null)
-            //{
-            //    return NotFound();
-            //}
-            //return Ok(screenwriter);
             var screenwriter = await appDbContext
                 .Screenwriters.Include(d => d.MovieScreenwriters)
                 .ThenInclude(md => md.Movie)

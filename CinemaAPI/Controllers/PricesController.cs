@@ -20,31 +20,6 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<List<PriceDTO>>> onGetAsync()
-        //{
-        //    var prices = await appDbContext
-        //        .Prices.Include(p => p.Movie)
-        //        .Include(p => p.SeatReservation)
-        //        .ToListAsync();
-
-        //    var priceDTOs = prices
-        //        .Select(priceDTO => new PriceDTO
-        //        {
-        //            ScreenwriterId = screenwriter.ScreenwriterId,
-        //            ScreenwriterFullName = screenwriter.ScreenwriterFullName,
-        //            Movie = price
-        //                .Mov.Select(md => new EntityWithMovieList
-        //                {
-        //                    MovieId = md.MovieId,
-        //                    MovieTitle = md.Movie.MovieTitle
-        //                })
-        //                .ToList()
-        //        })
-        //        .ToList();
-
-        //    return Ok(priceDTOs);
-        //}
         [HttpGet]
         public async Task<ActionResult<List<PriceDTO>>> onGetAsync()
         {
@@ -138,7 +113,6 @@ namespace CinemaAPI.Controllers
             appDbContext.Prices.Add(price);
             await appDbContext.SaveChangesAsync();
 
-            //return CreatedAtAction(nameof(onGetAsync), new { id = price.PriceId }, price);
             var createdPrice = await appDbContext.Prices.FindAsync(price.PriceId);
 
             if (createdPrice != null)
