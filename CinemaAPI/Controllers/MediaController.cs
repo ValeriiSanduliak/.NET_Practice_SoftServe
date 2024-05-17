@@ -21,7 +21,15 @@ namespace CinemaAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Media>>> onGetAsync()
         {
-            var media = await appDbContext.Media.ToListAsync();
+            var media = await appDbContext
+                .Media.Select(item => new
+                {
+                    item.MediaId,
+                    item.MovieDescription,
+                    item.MoviePhoto,
+                    item.MovieTrailer
+                })
+                .ToListAsync();
             return Ok(media);
         }
 
@@ -33,7 +41,16 @@ namespace CinemaAPI.Controllers
             {
                 return NotFound();
             }
-            return Ok(media);
+
+            var result = new
+            {
+                media.MediaId,
+                media.MovieDescription,
+                media.MoviePhoto,
+                media.MovieTrailer
+            };
+
+            return Ok(result);
         }
 
         [HttpPost]
