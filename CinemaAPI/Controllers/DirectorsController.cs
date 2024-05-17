@@ -2,6 +2,7 @@
 using CinemaAPI.Data;
 using CinemaAPI.DTOs;
 using CinemaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -91,6 +92,7 @@ namespace CinemaAPI.Controllers
             return Ok(directorDTO);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<DirectorPostDTO>> onPostAsync(
             [FromBody] DirectorPostDTO directorPostDTO
@@ -118,6 +120,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<DirectorPostDTO>> OnPatchAsync(
             int id,
@@ -151,6 +154,7 @@ namespace CinemaAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Director>> onDeleteAsync(int id)
         {
