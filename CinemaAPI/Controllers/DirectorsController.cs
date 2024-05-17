@@ -33,6 +33,11 @@ namespace CinemaAPI.Controllers
                 .ThenInclude(md => md.Movie)
                 .ToListAsync();
 
+            if (directors == null)
+            {
+                return NoContent();
+            }
+
             var directorDTOs = directors
                 .Select(director => new DirectorDTO
                 {

@@ -13,8 +13,6 @@ public partial class Reservation
 
     public int PriceId { get; set; }
 
-    public int Discount { get; set; }
-
     public virtual MovieSession MovieSession { get; set; } = null!;
 
     public virtual Price Price { get; set; } = null!;

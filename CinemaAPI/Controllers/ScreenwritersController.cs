@@ -27,6 +27,11 @@ namespace CinemaAPI.Controllers
                 .ThenInclude(md => md.Movie)
                 .ToListAsync();
 
+            if (screenwriters == null)
+            {
+                return NoContent();
+            }
+
             var screenwriterDTOs = screenwriters
                 .Select(screenwriter => new ScreenWriterWithMoviesDTO
                 {

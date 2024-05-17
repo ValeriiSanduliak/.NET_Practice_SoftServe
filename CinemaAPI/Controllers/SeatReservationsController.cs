@@ -27,6 +27,11 @@ namespace CinemaAPI.Controllers
         {
             var seatReservations = await appDbContext.SeatReservations.ToListAsync();
 
+            if (seatReservations == null)
+            {
+                return NoContent();
+            }
+
             var seatReservationsDTOs = seatReservations
                 .Select(seatReservation => new SeatReservationDTO
                 {

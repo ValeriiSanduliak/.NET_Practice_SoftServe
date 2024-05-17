@@ -52,6 +52,11 @@ namespace CinemaAPI.Controllers
                 .Include(p => p.SeatReservation)
                 .ToListAsync();
 
+            if (prices == null)
+            {
+                return NoContent();
+            }
+
             var priceDTOs = prices
                 .Select(price => new PriceDTO
                 {

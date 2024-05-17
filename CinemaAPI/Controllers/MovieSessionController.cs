@@ -20,21 +20,101 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MovieSession>>> onGetAsync()
+        public async Task<ActionResult<List<MovieSessionDTO>>> onGetAsync()
         {
-            var movieSessions = await appDbContext.MovieSessions.ToListAsync();
-            return Ok(movieSessions);
+            var movieSessions = await appDbContext
+                .MovieSessions.Include(ms => ms.Movie)
+                .Include(ms => ms.Hall)
+                .Include(ms => ms.Reservations)
+                .ToListAsync();
+
+            if (movieSessions == null)
+            {
+                return NoContent();
+            }
+
+            var movieSessionDTOs = movieSessions
+                .Select(movieSession => new MovieSessionDTO
+                {
+                    MovieSessionId = movieSession.MovieSessionId,
+                    StartTime = movieSession.StartTime,
+                    TheLowestPrice = movieSession.TheLowestPrice,
+                    MiddlePrice = movieSession.MiddlePrice,
+                    TheHighestPrice = movieSession.TheHighestPrice,
+                    Movie = new EntityWithMovieList
+                    {
+                        MovieId = movieSession.MovieId,
+                        MovieTitle = movieSession.Movie.MovieTitle
+                    },
+                    Hall = new EntityWithHallList
+                    {
+                        HallId = movieSession.HallId,
+                        HallName = movieSession.Hall.HallName,
+                        HallType = movieSession.Hall.HallType,
+                        NumberOfRows = movieSession.Hall.NumberOfRows,
+                        NumberOfSeats = movieSession.Hall.NumberOfSeats
+                    },
+                    Reservations = movieSession
+                        .Reservations.Select(r => new EntityWithReservation
+                        {
+                            ReservationId = r.ReservationId,
+                            PriceId = r.PriceId,
+                            MovieSessionId = r.MovieSessionId,
+                            UserId = r.UserId,
+                        })
+                        .ToList()
+                })
+                .ToList();
+
+            return Ok(movieSessionDTOs);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<MovieSession>> onGetMovieSessionAsync(int id)
+        public async Task<ActionResult<MovieSessionDTO>> onGetMovieSessionAsync(int id)
         {
-            var movieSession = await appDbContext.MovieSessions.FindAsync(id);
+            var movieSession = await appDbContext
+                .MovieSessions.Include(ms => ms.Movie)
+                .Include(ms => ms.Hall)
+                .Include(ms => ms.Reservations)
+                .FirstOrDefaultAsync(ms => ms.MovieSessionId == id);
+
             if (movieSession == null)
             {
                 return NotFound();
             }
-            return Ok(movieSession);
+
+            var movieSessionDTO = new MovieSessionDTO
+            {
+                MovieSessionId = movieSession.MovieSessionId,
+                StartTime = movieSession.StartTime,
+                TheLowestPrice = movieSession.TheLowestPrice,
+                MiddlePrice = movieSession.MiddlePrice,
+                TheHighestPrice = movieSession.TheHighestPrice,
+                Movie = new EntityWithMovieList
+                {
+                    MovieId = movieSession.MovieId,
+                    MovieTitle = movieSession.Movie.MovieTitle
+                },
+                Hall = new EntityWithHallList
+                {
+                    HallId = movieSession.HallId,
+                    HallName = movieSession.Hall.HallName,
+                    HallType = movieSession.Hall.HallType,
+                    NumberOfRows = movieSession.Hall.NumberOfRows,
+                    NumberOfSeats = movieSession.Hall.NumberOfSeats
+                },
+                Reservations = movieSession
+                    .Reservations.Select(r => new EntityWithReservation
+                    {
+                        ReservationId = r.ReservationId,
+                        PriceId = r.PriceId,
+                        MovieSessionId = r.MovieSessionId,
+                        UserId = r.UserId,
+                    })
+                    .ToList()
+            };
+
+            return Ok(movieSessionDTO);
         }
 
         //[Authorize(Roles = "admin")]
@@ -75,28 +155,73 @@ namespace CinemaAPI.Controllers
         }
 
         //[Authorize(Roles = "admin")]
-        [HttpPut("{id}")]
-        public async Task<ActionResult<MovieSession>> onPutAsync(
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<MovieSessionPatchDTO>> onPutAsync(
             int id,
-            [FromBody] MovieSession movieSession
+            [FromBody] MovieSessionPatchDTO movieSessionPatchDTO
         )
         {
-            if (id != movieSession.MovieSessionId)
+            try
             {
-                return BadRequest();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var existingMovieSession = await appDbContext.MovieSessions.FindAsync(id);
+                if (existingMovieSession == null)
+                {
+                    return NotFound();
+                }
+
+                if (movieSessionPatchDTO.HallId != null)
+                {
+                    existingMovieSession.HallId = (int)movieSessionPatchDTO.HallId;
+                }
+
+                if (movieSessionPatchDTO.MovieId != null)
+                {
+                    existingMovieSession.MovieId = (int)movieSessionPatchDTO.MovieId;
+                }
+
+                if (movieSessionPatchDTO.StartTime != null)
+                {
+                    existingMovieSession.StartTime = (TimeOnly)movieSessionPatchDTO.StartTime;
+                }
+
+                if (movieSessionPatchDTO.TheLowestPrice != null)
+                {
+                    existingMovieSession.TheLowestPrice = movieSessionPatchDTO.TheLowestPrice;
+                }
+
+                if (movieSessionPatchDTO.MiddlePrice != null)
+                {
+                    existingMovieSession.MiddlePrice = movieSessionPatchDTO.MiddlePrice;
+                }
+
+                if (movieSessionPatchDTO.TheHighestPrice != null)
+                {
+                    existingMovieSession.TheHighestPrice = movieSessionPatchDTO.TheHighestPrice;
+                }
+
+                await appDbContext.SaveChangesAsync();
+
+                return Ok(existingMovieSession);
             }
-
-            appDbContext.Entry(movieSession).State = EntityState.Modified;
-            await appDbContext.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         //[Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<MovieSession>> onDeleteAsync(int id)
         {
-            var movieSession = await appDbContext.MovieSessions.FindAsync(id);
+            var movieSession = await appDbContext
+                .MovieSessions.Include(ms => ms.Reservations)
+                .FirstOrDefaultAsync(ms => ms.MovieSessionId == id);
+
             if (movieSession == null)
             {
                 return NotFound();
