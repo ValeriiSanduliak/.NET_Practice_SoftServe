@@ -100,7 +100,7 @@ namespace CinemaAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<MovieDirector>> onPatchAsync(
             int id,
-            [FromBody] MovieDirectorDTO movieDirectorDTO
+            [FromBody] MovieDirectorPatchDTO movieDirectorDTO
         )
         {
             var movieDirector = await appDbContext.MovieDirectors.FindAsync(id);
@@ -109,32 +109,40 @@ namespace CinemaAPI.Controllers
                 return NotFound();
             }
 
-            var existingMovie = await appDbContext.Movies.FindAsync(movieDirectorDTO.MovieId);
-            if (existingMovie == null)
+            if (movieDirectorDTO.MovieId.HasValue)
             {
-                return NotFound("Movie not found.");
+                var existingMovie = await appDbContext.Movies.FindAsync(
+                    movieDirectorDTO.MovieId.Value
+                );
+                if (existingMovie == null)
+                {
+                    return NotFound("Movie not found.");
+                }
+                movieDirector.MovieId = movieDirectorDTO.MovieId.Value;
             }
 
-            var existingDirectorB = await appDbContext.Directors.FindAsync(
-                movieDirectorDTO.DirectorId
-            );
-            if (existingDirectorB == null)
+            if (movieDirectorDTO.DirectorId.HasValue)
             {
-                return NotFound("Director not found.");
+                var existingDirector = await appDbContext.Directors.FindAsync(
+                    movieDirectorDTO.DirectorId.Value
+                );
+                if (existingDirector == null)
+                {
+                    return NotFound("Director not found.");
+                }
+                movieDirector.DirectorId = movieDirectorDTO.DirectorId.Value;
             }
 
-            var existingDirector = await appDbContext.MovieDirectors.FirstOrDefaultAsync(md =>
-                md.MovieId == movieDirectorDTO.MovieId
-                && md.DirectorId == movieDirectorDTO.DirectorId
+            var existingDirectorAssociation = await appDbContext.MovieDirectors.FirstOrDefaultAsync(
+                md =>
+                    md.MovieId == movieDirector.MovieId
+                    && md.DirectorId == movieDirector.DirectorId
+                    && md.MovieDirectorId != id
             );
-
-            if (existingDirector != null && existingDirector.MovieDirectorId != id)
+            if (existingDirectorAssociation != null)
             {
                 return Conflict("This director is already associated with this movie.");
             }
-
-            movieDirector.DirectorId = movieDirectorDTO.DirectorId;
-            movieDirector.MovieId = movieDirectorDTO.MovieId;
 
             await appDbContext.SaveChangesAsync();
 

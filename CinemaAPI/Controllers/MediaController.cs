@@ -85,7 +85,7 @@ namespace CinemaAPI.Controllers
         }
 
         [HttpPatch("{id}")]
-        public async Task<ActionResult<Media>> OnPatchAsync(int id, [FromBody] MediaDTO media)
+        public async Task<ActionResult<Media>> OnPatchAsync(int id, [FromBody] MediaPatchDTO media)
         {
             try
             {
@@ -95,7 +95,6 @@ namespace CinemaAPI.Controllers
                     return NotFound();
                 }
 
-                // Update the existing actor entity with the values from the incoming entity
                 if (media.MovieDescription != null)
                 {
                     existingMedia.MovieDescription = media.MovieDescription;
@@ -117,7 +116,7 @@ namespace CinemaAPI.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 // Handle concurrency conflict
-                return Conflict("The actor has been modified or deleted by another process.");
+                return Conflict("The media has been modified or deleted by another process.");
             }
         }
 

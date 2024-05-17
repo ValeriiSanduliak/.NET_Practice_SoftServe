@@ -96,7 +96,7 @@ namespace CinemaAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<MovieScreenwriter>> onPatchAsync(
             int id,
-            [FromBody] MovieScreenwriterDTO movieScreenwriterDTO
+            [FromBody] MovieScreenwriterPatchDTO movieScreenwriterDTO
         )
         {
             var movieScreenwriter = await appDbContext.MovieScreenwriters.FindAsync(id);
@@ -105,34 +105,41 @@ namespace CinemaAPI.Controllers
                 return NotFound();
             }
 
-            var existingMovie = await appDbContext.Movies.FindAsync(movieScreenwriterDTO.MovieId);
-            if (existingMovie == null)
+            if (movieScreenwriterDTO.MovieId.HasValue)
             {
-                return NotFound("Movie not found.");
+                var existingMovie = await appDbContext.Movies.FindAsync(
+                    movieScreenwriterDTO.MovieId.Value
+                );
+                if (existingMovie == null)
+                {
+                    return NotFound("Movie not found.");
+                }
+                movieScreenwriter.MovieId = movieScreenwriterDTO.MovieId.Value;
             }
 
-            var existingScreenwriter = await appDbContext.Screenwriters.FindAsync(
-                movieScreenwriterDTO.ScreenwriterId
-            );
-            if (existingScreenwriter == null)
+            if (movieScreenwriterDTO.ScreenwriterId.HasValue)
             {
-                return NotFound("Screenwriter not found.");
+                var existingScreenwriter = await appDbContext.Screenwriters.FindAsync(
+                    movieScreenwriterDTO.ScreenwriterId.Value
+                );
+                if (existingScreenwriter == null)
+                {
+                    return NotFound("Screenwriter not found.");
+                }
+                movieScreenwriter.ScreenwriterId = movieScreenwriterDTO.ScreenwriterId.Value;
             }
 
+            // Check if the screenwriter is already associated with this movie
             var existingMovieScreenwriter =
                 await appDbContext.MovieScreenwriters.FirstOrDefaultAsync(ms =>
-                    ms.MovieId == movieScreenwriterDTO.MovieId
-                    && ms.ScreenwriterId == movieScreenwriterDTO.ScreenwriterId
+                    ms.MovieId == movieScreenwriter.MovieId
+                    && ms.ScreenwriterId == movieScreenwriter.ScreenwriterId
                     && ms.MovieScreenwriterId != id
                 );
-
             if (existingMovieScreenwriter != null)
             {
                 return Conflict("This screenwriter is already associated with this movie.");
             }
-
-            movieScreenwriter.ScreenwriterId = movieScreenwriterDTO.ScreenwriterId;
-            movieScreenwriter.MovieId = movieScreenwriterDTO.MovieId;
 
             await appDbContext.SaveChangesAsync();
 

@@ -90,7 +90,7 @@ namespace CinemaAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<MovieGenre>> onPatchAsync(
             int id,
-            [FromBody] MovieGenreDTO movieGenreDTO
+            [FromBody] MovieGenrePatchDTO movieGenreDTO
         )
         {
             var movieGenre = await appDbContext.MovieGenres.FindAsync(id);
@@ -99,31 +99,40 @@ namespace CinemaAPI.Controllers
                 return NotFound();
             }
 
-            var existingMovie = await appDbContext.Movies.FindAsync(movieGenreDTO.MovieId);
-            if (existingMovie == null)
+            if (movieGenreDTO.MovieId.HasValue)
             {
-                return NotFound("Movie not found.");
+                var existingMovie = await appDbContext.Movies.FindAsync(
+                    movieGenreDTO.MovieId.Value
+                );
+                if (existingMovie == null)
+                {
+                    return NotFound("Movie not found.");
+                }
+                movieGenre.MovieId = movieGenreDTO.MovieId.Value;
             }
 
-            var existingGenre = await appDbContext.Genres.FindAsync(movieGenreDTO.GenreId);
-            if (existingGenre == null)
+            if (movieGenreDTO.GenreId.HasValue)
             {
-                return NotFound("Genre not found.");
+                var existingGenre = await appDbContext.Genres.FindAsync(
+                    movieGenreDTO.GenreId.Value
+                );
+                if (existingGenre == null)
+                {
+                    return NotFound("Genre not found.");
+                }
+                movieGenre.GenreId = movieGenreDTO.GenreId.Value;
             }
 
+            // Check if the genre is already associated with this movie
             var existingMovieGenre = await appDbContext.MovieGenres.FirstOrDefaultAsync(mg =>
-                mg.MovieId == movieGenreDTO.MovieId
-                && mg.GenreId == movieGenreDTO.GenreId
+                mg.MovieId == movieGenre.MovieId
+                && mg.GenreId == movieGenre.GenreId
                 && mg.MovieGenreId != id
             );
-
             if (existingMovieGenre != null)
             {
                 return Conflict("This genre is already associated with this movie.");
             }
-
-            movieGenre.GenreId = movieGenreDTO.GenreId;
-            movieGenre.MovieId = movieGenreDTO.MovieId;
 
             await appDbContext.SaveChangesAsync();
             return Ok(movieGenre);

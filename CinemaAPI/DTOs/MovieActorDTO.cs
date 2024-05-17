@@ -17,4 +17,13 @@
 
         public string ActorNickname { get; set; }
     }
+
+    public class MovieActorPatchDTO
+    {
+        public int? MovieId { get; set; }
+
+        public int? ActorId { get; set; }
+
+        public string? ActorNickname { get; set; }
+    }
 }
