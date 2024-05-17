@@ -141,11 +141,6 @@ namespace CinemaAPI.Controllers
 
             if (createdMovieSession != null)
             {
-                //return CreatedAtAction(
-                //    "onGetMovieSessionAsync",
-                //    new { id = createdMovieSession.MovieSessionId },
-                //    createdMovieSession
-                //);
                 return StatusCode(201, createdMovieSession);
             }
             else

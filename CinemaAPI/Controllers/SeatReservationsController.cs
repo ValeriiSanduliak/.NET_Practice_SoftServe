@@ -128,11 +128,6 @@ namespace CinemaAPI.Controllers
 
             if (createdSeatReservation != null)
             {
-                //return CreatedAtAction(
-                //    nameof(onPostAsync),
-                //    new { id = createdGenre.GenreId },
-                //    createdGenre
-                //);
                 return StatusCode(201, createdSeatReservation);
             }
             else

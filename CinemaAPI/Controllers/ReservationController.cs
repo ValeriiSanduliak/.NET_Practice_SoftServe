@@ -2,6 +2,7 @@
 using CinemaAPI.Data;
 using CinemaAPI.DTOs;
 using CinemaAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,7 +44,7 @@ namespace CinemaAPI.Controllers
                         .FirstOrDefault()
                         .Movie.MovieSessions.FirstOrDefault()
                         .StartTime,
-                    Seats = group
+                    AvailibleSeats = group
                         .Select(p => p.SeatReservation.RowNumber)
                         .Distinct()
                         .Select(rowNumber => new
@@ -89,7 +90,7 @@ namespace CinemaAPI.Controllers
                         .FirstOrDefault()
                         .Movie.MovieSessions.FirstOrDefault()
                         .StartTime,
-                    Seats = group
+                    AvailibleSeats = group
                         .Select(p => p.SeatReservation.RowNumber)
                         .Distinct()
                         .Select(rowNumber => new
@@ -112,6 +113,7 @@ namespace CinemaAPI.Controllers
             return Ok(reservations);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<List<Reservation>>> onGetReservationsAsync()
         {
@@ -132,6 +134,7 @@ namespace CinemaAPI.Controllers
             return Ok(reservations);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<List<Reservation>>> onGetReservatiByIdonsAsync(int id)
         {
@@ -153,6 +156,7 @@ namespace CinemaAPI.Controllers
             return Ok(reservations);
         }
 
+        [Authorize(Roles = "user, admin")]
         [HttpPost]
         public async Task<ActionResult<Reservation>> onPostAsync(
             int movieSessionId,
@@ -163,11 +167,6 @@ namespace CinemaAPI.Controllers
             // Get token from header
 
             string token = Request.Headers["Authorization"];
-
-            if (string.IsNullOrEmpty(token))
-            {
-                return Unauthorized("Authorization token is not specified.");
-            }
 
             if (token.StartsWith("Bearer"))
             {
@@ -293,6 +292,7 @@ namespace CinemaAPI.Controllers
             return Ok(returnReservation);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{id}")]
         public async Task<ActionResult<Reservation>> onPatchAsync(
             int id,
@@ -363,6 +363,7 @@ namespace CinemaAPI.Controllers
             return Ok(reservationToUpdate);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Reservation>> onDeleteAsync(int id)
         {

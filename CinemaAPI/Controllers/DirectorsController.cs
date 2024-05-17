@@ -20,12 +20,6 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<List<Director>>> onGetAsync()
-        //{
-        //    var directors = await appDbContext.Directors.ToListAsync();
-        //    return Ok(directors);
-        //}
         [HttpGet]
         public async Task<ActionResult<List<DirectorMovieDTO>>> onGetAsync()
         {
