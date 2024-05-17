@@ -22,7 +22,7 @@ namespace CinemaAPI.Controllers
         public async Task<ActionResult<List<MovieSession>>> onGetAsync()
         {
             var endDate = new DateOnly(2024, 6, 20);
-
+            
             var sessionList = await appDbContext
                 .MovieSessions
                 .Include(ms => ms.Movie)

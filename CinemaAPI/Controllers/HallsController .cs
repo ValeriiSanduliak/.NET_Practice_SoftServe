@@ -22,13 +22,6 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<List<Hall>>> onGetAsync()
-        //{
-        //    //var halls = await appDbContext.Halls.ToListAsync();
-        //    var halls = await appDbContext.Halls.Include(h => h.MovieSessions).ToListAsync();
-        //    return Ok(halls);
-        //}
         [HttpGet]
         public async Task<ActionResult<List<HallDTO>>> onGetAsync()
         {
@@ -58,18 +51,6 @@ namespace CinemaAPI.Controllers
 
             return Ok(hallDTOs);
         }
-
-        //[HttpGet("{id}")]
-        //public async Task<ActionResult<Hall>> onGetHallAsync(int id)
-        //{
-
-        //var hall = await appDbContext.Halls.FindAsync(id);
-        //if (hall == null)
-        //{
-        //    return NotFound();
-        //}
-        //return Ok(hall);
-        //}
 
         [HttpGet("{id}")]
         public async Task<ActionResult<HallDTO>> GetHallByIdAsync(int id)
@@ -135,27 +116,6 @@ namespace CinemaAPI.Controllers
             }
         }
 
-        //[HttpPost]
-        //public async Task<ActionResult<Hall>> onPostAsync([FromBody] Hall hall)
-        //{
-        //    if (hall == null || hall.SeatReservationIds == null)
-        //    {
-        //        return BadRequest("Invalid request body.");
-        //    }
-
-        //    // Retrieve SeatReservations based on the provided IDs
-        //    var seatReservations = await appDbContext
-        //        .SeatReservations.Where(sr =>
-        //            hall.SeatReservationIds.Contains(sr.SeatReservationId)
-        //        )
-        //        .ToListAsync();
-
-        //    appDbContext.Halls.Add(hall);
-        //    await appDbContext.SaveChangesAsync();
-
-        //    return CreatedAtAction(nameof(onGetAsync), new { id = hall.HallId }, hall);
-        //}
-
         [HttpPatch("{id}")]
         public async Task<ActionResult<HallPatchDTO>> OnPatchAsync(
             int id,
@@ -170,7 +130,6 @@ namespace CinemaAPI.Controllers
                     return NotFound();
                 }
 
-                // Update the existing hall entity with the values from the incoming DTO
                 if (!string.IsNullOrEmpty(hallDTO.HallName))
                 {
                     existingHall.HallName = hallDTO.HallName;
@@ -194,41 +153,13 @@ namespace CinemaAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Handle concurrency conflict
                 return Conflict("The hall has been modified or deleted by another process.");
             }
             catch (Exception ex)
             {
-                // Handle other exceptions
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-        //{
-        //    try
-        //    {
-        //        var existingHall = await appDbContext.Halls.FindAsync(id);
-        //        if (existingHall == null)
-        //        {
-        //            return NotFound();
-        //        }
-
-        //        // Update the existing hall entity with the values from the incoming entity
-        //        if (hallDTO.HallName != null)
-        //        {
-        //            existingHall.HallName = hallDTO.HallName;
-        //        }
-
-        //        await appDbContext.SaveChangesAsync();
-        //        return Ok(existingHall);
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        // Handle concurrency conflict
-        //        return Conflict("The hall has been modified or deleted by another process.");
-        //    }
-        //}
-
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<Hall>> onDeleteAsync(int id)
