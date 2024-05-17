@@ -60,7 +60,7 @@ namespace CinemaAPI.Controllers
                         })
                         .ToList(),
                     Directors = movie
-                        .MovieDirectors.Select(md => new DirectorDTO
+                        .MovieDirectors.Select(md => new DirectorMovieDTO
                         {
                             DirectorId = md.DirectorId,
                             DirectorFullName = md.Director.DirectorFullName
@@ -138,7 +138,7 @@ namespace CinemaAPI.Controllers
                     })
                     .ToList(),
                 Directors = movie
-                    .MovieDirectors.Select(md => new DirectorDTO
+                    .MovieDirectors.Select(md => new DirectorMovieDTO
                     {
                         DirectorId = md.DirectorId,
                         DirectorFullName = md.Director.DirectorFullName

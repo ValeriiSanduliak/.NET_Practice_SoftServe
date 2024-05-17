@@ -1,4 +1,5 @@
-﻿using CinemaAPI.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using CinemaAPI.Models;
 
 namespace CinemaAPI.DTOs
 {
@@ -19,12 +20,18 @@ namespace CinemaAPI.DTOs
 
     public class HallPostDTO
     {
+        [Required(ErrorMessage = "HallName is required")]
         public string HallName { get; set; } = null!;
 
+        [Required(ErrorMessage = "HallType is required")]
         public string HallType { get; set; } = null!;
 
+        [Required(ErrorMessage = "NumberOfRows is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "NumberOfRows must be a positive number")]
         public int NumberOfRows { get; set; }
 
+        [Required(ErrorMessage = "NumberOfSeats is required")]
+        [Range(0, int.MaxValue, ErrorMessage = "NumberOfSeats must be a positive number")]
         public int NumberOfSeats { get; set; }
     }
 
@@ -34,8 +41,10 @@ namespace CinemaAPI.DTOs
 
         public string? HallType { get; set; } = null!;
 
+        [Range(0, int.MaxValue, ErrorMessage = "NumberOfRows must be a positive number")]
         public int? NumberOfRows { get; set; }
 
+        [Range(0, int.MaxValue, ErrorMessage = "NumberOfSeats must be a positive number")]
         public int? NumberOfSeats { get; set; }
     }
 }

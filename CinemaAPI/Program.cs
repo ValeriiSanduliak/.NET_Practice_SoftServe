@@ -20,6 +20,7 @@ builder.Services.AddControllers();
 
 /*    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
 */
+
 // Register Auth Service that handles JWT creation and validation
 builder.Services.AddScoped<IAuthService, AuthService>();
 
