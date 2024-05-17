@@ -290,7 +290,7 @@ namespace CinemaAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult<Reservation>> onPatchAsync(
             int id,
-            [FromBody] ReservationDTO reservation
+            [FromBody] ReservationPatchDTO reservation
         )
         {
             var reservationToUpdate = await appDbContext.Reservations.FindAsync(id);
@@ -300,49 +300,57 @@ namespace CinemaAPI.Controllers
                 return NotFound();
             }
 
-            var user = await appDbContext.Users.FindAsync(reservation.UserId);
-
-            if (user == null)
+            if (reservation.UserId.HasValue)
             {
-                return NotFound("User not found");
+                var user = await appDbContext.Users.FindAsync(reservation.UserId.Value);
+
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+                reservationToUpdate.UserId = reservation.UserId.Value;
             }
 
-            var movieSession = await appDbContext.MovieSessions.FirstOrDefaultAsync(ms =>
-                ms.MovieSessionId == reservation.MovieSessionId
-            );
-
-            var movieSessionCheck = await appDbContext
-                .MovieSessions.Include(m => m.Movie)
-                .ThenInclude(p => p.Prices)
-                .Where(m =>
-                    m.MovieId == movieSession.MovieId
-                    && m.Movie.Prices.Any(p => p.PriceId == reservation.PriceId)
-                )
-                .ToListAsync();
-
-            if (movieSessionCheck.Count == 0)
+            if (reservation.MovieSessionId.HasValue)
             {
-                return NotFound("There is no such movieSession in this priceId");
-            }
-
-            if (movieSession == null)
-            {
-                return NotFound("There is no such movieSession");
-            }
-
-            var existingReservationWithSamePriceId =
-                await appDbContext.Reservations.FirstOrDefaultAsync(r =>
-                    r.PriceId == reservation.PriceId && r.ReservationId != id
+                var movieSession = await appDbContext.MovieSessions.FirstOrDefaultAsync(ms =>
+                    ms.MovieSessionId == reservation.MovieSessionId.Value
                 );
 
-            if (existingReservationWithSamePriceId != null)
-            {
-                return BadRequest("PriceId is already used in another reservation.");
+                if (movieSession == null)
+                {
+                    return NotFound("There is no such movieSession");
+                }
+
+                var movieSessionCheck = await appDbContext
+                    .MovieSessions.Include(m => m.Movie)
+                    .ThenInclude(p => p.Prices)
+                    .Where(m =>
+                        m.MovieId == movieSession.MovieId
+                        && m.Movie.Prices.Any(p => p.PriceId == reservation.PriceId)
+                    )
+                    .ToListAsync();
+
+                if (movieSessionCheck.Count == 0)
+                {
+                    return NotFound("There is no such movieSession in this priceId");
+                }
+                reservationToUpdate.MovieSessionId = reservation.MovieSessionId.Value;
             }
 
-            reservationToUpdate.UserId = reservation.UserId;
-            reservationToUpdate.MovieSessionId = reservation.MovieSessionId;
-            reservationToUpdate.PriceId = reservation.PriceId;
+            if (reservation.PriceId.HasValue)
+            {
+                var existingReservationWithSamePriceId =
+                    await appDbContext.Reservations.FirstOrDefaultAsync(r =>
+                        r.PriceId == reservation.PriceId.Value && r.ReservationId != id
+                    );
+
+                if (existingReservationWithSamePriceId != null)
+                {
+                    return BadRequest("PriceId is already used in another reservation.");
+                }
+                reservationToUpdate.PriceId = reservation.PriceId.Value;
+            }
 
             await appDbContext.SaveChangesAsync();
 

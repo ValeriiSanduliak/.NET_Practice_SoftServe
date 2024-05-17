@@ -8,4 +8,13 @@
 
         public int PriceId { get; set; }
     }
+
+    public class ReservationPatchDTO
+    {
+        public int? UserId { get; set; }
+
+        public int? MovieSessionId { get; set; }
+
+        public int? PriceId { get; set; }
+    }
 }
