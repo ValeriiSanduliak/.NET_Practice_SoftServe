@@ -118,6 +118,7 @@ namespace CinemaAPI.Controllers
             var reservations = await appDbContext
                 .Reservations.Select(item => new
                 {
+                    ReservationId = item.ReservationId,
                     UserId = item.UserId,
                     MovieSessionId = item.MovieSessionId,
                     PriceId = item.PriceId
@@ -138,6 +139,7 @@ namespace CinemaAPI.Controllers
                 .Reservations.Where(r => r.ReservationId == id)
                 .Select(item => new
                 {
+                    ReservationId = item.ReservationId,
                     UserId = item.UserId,
                     MovieSessionId = item.MovieSessionId,
                     PriceId = item.PriceId
@@ -284,7 +286,11 @@ namespace CinemaAPI.Controllers
             appDbContext.Reservations.Add(reservation);
             await appDbContext.SaveChangesAsync();
 
-            return Ok();
+            var returnReservation = await appDbContext.Reservations.FindAsync(
+                reservation.ReservationId
+            );
+
+            return Ok(returnReservation);
         }
 
         [HttpPatch("{id}")]
@@ -354,7 +360,7 @@ namespace CinemaAPI.Controllers
 
             await appDbContext.SaveChangesAsync();
 
-            return Ok();
+            return Ok(reservationToUpdate);
         }
 
         [HttpDelete("{id}")]
