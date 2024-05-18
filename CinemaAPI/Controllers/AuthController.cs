@@ -127,7 +127,7 @@ namespace CinemaAPI.Controllers
 
             if (registeredUser != null)
             {
-                return Ok(registeredUser);
+                return StatusCode(201, registeredUser);
             }
 
             return BadRequest(new { message = "User registration unsuccessful" });

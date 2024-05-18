@@ -285,11 +285,17 @@ namespace CinemaAPI.Controllers
             appDbContext.Reservations.Add(reservation);
             await appDbContext.SaveChangesAsync();
 
-            var returnReservation = await appDbContext.Reservations.FindAsync(
-                reservation.ReservationId
-            );
+            var reservation2 = await appDbContext.Reservations.FindAsync(reservation.ReservationId);
 
-            return Ok(returnReservation);
+            var returnReservation = new
+            {
+                ReservationId = reservation2.ReservationId,
+                UserId = reservation2.UserId,
+                MovieSessionId = reservation2.MovieSessionId,
+                PriceId = reservation2.PriceId
+            };
+
+            return StatusCode(201, returnReservation);
         }
 
         [Authorize(Roles = "admin")]
@@ -360,7 +366,15 @@ namespace CinemaAPI.Controllers
 
             await appDbContext.SaveChangesAsync();
 
-            return Ok(reservationToUpdate);
+            var returnReservation = new
+            {
+                ReservationId = reservationToUpdate.ReservationId,
+                UserId = reservationToUpdate.UserId,
+                MovieSessionId = reservationToUpdate.MovieSessionId,
+                PriceId = reservationToUpdate.PriceId
+            };
+
+            return Ok(returnReservation);
         }
 
         [Authorize(Roles = "admin")]
