@@ -33,10 +33,6 @@ namespace CinemaAPI.Services
                 u.UserEmail == loginUser.UserEmail
             );
 
-            Console.WriteLine(
-                $"User logged in: {user.UserName} ({user.UserEmail}), Role: {user.UserRole}"
-            );
-
             if (user == null || Argon2.Verify(user.UserPassword, loginUser.UserPassword) == false)
             {
                 return null; //returning null intentionally to show that login was unsuccessful
@@ -62,7 +58,7 @@ namespace CinemaAPI.Services
                 IssuedAt = DateTime.UtcNow,
                 Issuer = _configuration["JWT:Issuer"],
                 Audience = _configuration["JWT:Audience"],
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature
