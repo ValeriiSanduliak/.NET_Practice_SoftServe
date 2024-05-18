@@ -88,7 +88,7 @@ namespace CinemaAPI.Controllers
 
             appDbContext.MovieGenres.Add(movieGenre);
             await appDbContext.SaveChangesAsync();
-            return Ok(existingMovie);
+            return StatusCode(201, existingMovie);
         }
 
         [Authorize(Roles = "admin")]
