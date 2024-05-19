@@ -98,7 +98,14 @@ namespace CinemaAPI.Controllers
                 movieDirector.MovieDirectorId
             );
 
-            return StatusCode(201, createdMovieDirector);
+            var returnMovieDirector = new
+            {
+                createdMovieDirector.MovieDirectorId,
+                createdMovieDirector.DirectorId,
+                createdMovieDirector.MovieId
+            };
+
+            return StatusCode(201, returnMovieDirector);
         }
 
         [Authorize(Roles = "admin")]

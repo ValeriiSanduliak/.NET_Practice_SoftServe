@@ -94,7 +94,14 @@ namespace CinemaAPI.Controllers
             appDbContext.MovieScreenwriters.Add(movieScreenwriter);
             await appDbContext.SaveChangesAsync();
 
-            return Ok(movieScreenwriter);
+            var returnMovieScreenwriter = new
+            {
+                movieScreenwriter.MovieScreenwriterId,
+                movieScreenwriter.ScreenwriterId,
+                movieScreenwriter.MovieId
+            };
+
+            return StatusCode(201, returnMovieScreenwriter);
         }
 
         [Authorize(Roles = "admin")]
@@ -148,7 +155,14 @@ namespace CinemaAPI.Controllers
 
             await appDbContext.SaveChangesAsync();
 
-            return Ok();
+            var returnMovieScreenwriter = new
+            {
+                movieScreenwriter.MovieScreenwriterId,
+                movieScreenwriter.ScreenwriterId,
+                movieScreenwriter.MovieId
+            };
+
+            return Ok(returnMovieScreenwriter);
         }
 
         [Authorize(Roles = "admin")]
