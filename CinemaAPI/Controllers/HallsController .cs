@@ -93,7 +93,7 @@ namespace CinemaAPI.Controllers
 
         [Authorize(Roles = "admin")]
         [HttpPost]
-        public async Task<ActionResult<Hall>> onPostAsync([FromBody] HallDTO hallDTO)
+        public async Task<ActionResult<HallPostDTO>> onPostAsync([FromBody] HallPostDTO hallPostDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -102,10 +102,10 @@ namespace CinemaAPI.Controllers
 
             var hall = new Hall
             {
-                HallName = hallDTO.HallName,
-                HallType = hallDTO.HallType,
-                NumberOfRows = hallDTO.NumberOfRows,
-                NumberOfSeats = hallDTO.NumberOfSeats
+                HallName = hallPostDTO.HallName,
+                HallType = hallPostDTO.HallType,
+                NumberOfRows = hallPostDTO.NumberOfRows,
+                NumberOfSeats = hallPostDTO.NumberOfSeats
             };
 
             appDbContext.Halls.Add(hall);

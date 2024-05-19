@@ -59,7 +59,6 @@ namespace CinemaAPI.Controllers
                         {
                             ReservationId = r.ReservationId,
                             PriceId = r.PriceId,
-                            MovieSessionId = r.MovieSessionId,
                             UserId = r.UserId,
                         })
                         .ToList()
@@ -108,7 +107,6 @@ namespace CinemaAPI.Controllers
                     {
                         ReservationId = r.ReservationId,
                         PriceId = r.PriceId,
-                        MovieSessionId = r.MovieSessionId,
                         UserId = r.UserId,
                     })
                     .ToList()
