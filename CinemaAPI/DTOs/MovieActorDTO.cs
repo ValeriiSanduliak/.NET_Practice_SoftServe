@@ -5,6 +5,7 @@
         public int ActorId { get; set; }
 
         public string ActorFullName { get; set; } = null!;
+        public string? ActorNickname { get; set; }
 
         public string? ActorPhoto { get; set; }
     }
