@@ -113,6 +113,74 @@ namespace CinemaAPI.Controllers
             return Ok(reservations);
         }
 
+        [Authorize(Roles = "user, admin")]
+        [HttpGet("UserReservations")]
+        public async Task<ActionResult<List<Reservation>>> onGetUserReservationsAsync()
+        {
+            // Get token from header
+
+            string token = Request.Headers["Authorization"];
+
+            if (token.StartsWith("Bearer"))
+            {
+                token = token.Substring("Bearer ".Length).Trim();
+            }
+
+            var handler = new JwtSecurityTokenHandler();
+
+            JwtSecurityToken jwt = null;
+            try
+            {
+                jwt = handler.ReadJwtToken(token);
+            }
+            catch (Exception)
+            {
+                return Unauthorized("Incorrect or damaged token.");
+            }
+
+            string email =
+                jwt.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value ?? string.Empty;
+
+            // Find the user by email
+            var user = await appDbContext.Users.FirstOrDefaultAsync(u => u.UserEmail == email);
+
+            if (user == null)
+            {
+                // User with this email does not exist
+                return NotFound("User not found");
+            }
+
+            var reservations = await appDbContext
+                .Reservations.Include(r => r.Price)
+                .ThenInclude(p => p.Movie)
+                .ThenInclude(ms => ms.MovieSessions)
+                .Include(r => r.Price)
+                .ThenInclude(p => p.SeatReservation)
+                .ThenInclude(h => h.Hall)
+                .Where(r => r.UserId == user.UserId)
+                .Select(item => new
+                {
+                    ReservationId = item.ReservationId,
+                    UserId = item.UserId,
+                    MovieSessionId = item.MovieSessionId,
+                    PriceId = item.PriceId,
+                    MovieTitle = item.Price.Movie.MovieTitle,
+                    HallName = item.Price.SeatReservation.Hall.HallName,
+                    HallType = item.Price.SeatReservation.Hall.HallType,
+                    StartTime = item.Price.Movie.MovieSessions.FirstOrDefault().StartTime,
+                    RowNumber = item.Price.SeatReservation.RowNumber,
+                    SeatNumber = item.Price.SeatReservation.SeatNumber
+                })
+                .ToListAsync();
+
+            if (reservations.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(reservations);
+        }
+
         [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<List<Reservation>>> onGetReservationsAsync()
