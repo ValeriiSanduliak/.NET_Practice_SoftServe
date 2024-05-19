@@ -57,7 +57,8 @@ namespace CinemaAPI.Controllers
                         {
                             ActorId = ma.ActorId,
                             ActorFullName = ma.Actor.ActorFullName,
-                            ActorPhoto = ma.Actor.ActorPhoto
+                            ActorPhoto = ma.Actor.ActorPhoto,
+                            ActorNickname = ma.ActorNickname
                         })
                         .ToList(),
                     Directors = movie
@@ -135,7 +136,8 @@ namespace CinemaAPI.Controllers
                     {
                         ActorId = ma.ActorId,
                         ActorFullName = ma.Actor.ActorFullName,
-                        ActorPhoto = ma.Actor.ActorPhoto
+                        ActorPhoto = ma.Actor.ActorPhoto,
+                        ActorNickname = ma.ActorNickname
                     })
                     .ToList(),
                 Directors = movie
