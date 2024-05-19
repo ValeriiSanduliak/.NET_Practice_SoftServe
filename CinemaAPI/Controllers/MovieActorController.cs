@@ -87,7 +87,15 @@ namespace CinemaAPI.Controllers
 
             if (createdMovieActor != null)
             {
-                return StatusCode(201, createdMovieActor);
+                var returnMovieActor = new
+                {
+                    createdMovieActor.MovieActorId,
+                    createdMovieActor.ActorId,
+                    createdMovieActor.MovieId,
+                    createdMovieActor.ActorNickname
+                };
+
+                return StatusCode(201, returnMovieActor);
             }
             else
             {
@@ -137,8 +145,16 @@ namespace CinemaAPI.Controllers
                 movieActor.ActorNickname = movieActorDTO.ActorNickname;
             }
 
+            var returnMovieActor = new
+            {
+                movieActor.MovieActorId,
+                movieActor.ActorId,
+                movieActor.MovieId,
+                movieActor.ActorNickname
+            };
+
             await appDbContext.SaveChangesAsync();
-            return Ok(movieActor);
+            return Ok(returnMovieActor);
         }
 
         [Authorize(Roles = "admin")]

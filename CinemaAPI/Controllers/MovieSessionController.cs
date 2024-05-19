@@ -19,6 +19,7 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<List<MovieSessionDTO>>> onGetAsync()
         {
@@ -68,6 +69,7 @@ namespace CinemaAPI.Controllers
             return Ok(movieSessionDTOs);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<MovieSessionDTO>> onGetMovieSessionAsync(int id)
         {

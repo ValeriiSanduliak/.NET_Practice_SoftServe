@@ -88,7 +88,15 @@ namespace CinemaAPI.Controllers
 
             appDbContext.MovieGenres.Add(movieGenre);
             await appDbContext.SaveChangesAsync();
-            return StatusCode(201, existingMovie);
+
+            var returnMovieGenre = new
+            {
+                movieGenre.MovieGenreId,
+                movieGenre.GenreId,
+                movieGenre.MovieId
+            };
+
+            return StatusCode(201, returnMovieGenre);
         }
 
         [Authorize(Roles = "admin")]
@@ -140,7 +148,14 @@ namespace CinemaAPI.Controllers
             }
 
             await appDbContext.SaveChangesAsync();
-            return Ok(movieGenre);
+
+            var returnMovieGenre = new
+            {
+                movieGenre.MovieGenreId,
+                movieGenre.GenreId,
+                movieGenre.MovieId
+            };
+            return Ok(returnMovieGenre);
         }
 
         [Authorize(Roles = "admin")]
