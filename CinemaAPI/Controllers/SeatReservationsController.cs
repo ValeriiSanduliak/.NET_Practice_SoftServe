@@ -22,6 +22,7 @@ namespace CinemaAPI.Controllers
             this.appDbContext = appDbContext;
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<ActionResult<List<SeatReservationDTO>>> onGetAsync()
         {
@@ -46,6 +47,7 @@ namespace CinemaAPI.Controllers
             return Ok(seatReservationsDTOs);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpGet("{id}")]
         public async Task<ActionResult<SeatReservationDTO>> onGetAsync(int id)
         {
