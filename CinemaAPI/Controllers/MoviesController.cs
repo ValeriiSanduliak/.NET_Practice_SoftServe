@@ -183,6 +183,24 @@ namespace CinemaAPI.Controllers
         {
             if (ModelState.IsValid)
             {
+                //Check for duplicate genre in the input
+                if (movieDto.GenreId.Count != movieDto.GenreId.Distinct().Count())
+                {
+                    return BadRequest("Duplicate genres are not allowed.");
+                }
+
+                // Check for duplicate directors in the input
+                if (movieDto.DirectorId.Count != movieDto.DirectorId.Distinct().Count())
+                {
+                    return BadRequest("Duplicate directors are not allowed.");
+                }
+
+                // Check for duplicate screenwriters in the input
+                if (movieDto.ScreenwriterId.Count != movieDto.ScreenwriterId.Distinct().Count())
+                {
+                    return BadRequest("Duplicate screenwriters are not allowed.");
+                }
+
                 var existingMovie = await appDbContext.Movies.FirstOrDefaultAsync(m =>
                     m.MovieTitle == movieDto.MovieTitle
                 );
